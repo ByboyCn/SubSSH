@@ -62,6 +62,7 @@ public sealed class WebApiPlugin : IComponent
                                 if (server != null) { ctx.Provide<IWebApiServer>(server); ctx.Provide<IWebApiEventBus>(sse); return; }
                                                             server = KestrelWebServer.BuildAndStart(settings, adapter, oauth, events);
                             ctx.Require<ICryptoBox>(c => server.SetCrypto(c), () => server.SetCrypto(null));
+                            ctx.Require<IMcpHttpHandler>(m => server.SetMcpHandler(m), () => server.SetMcpHandler(null));
                                 // Crypto 插件上线后私钥入库自动加密
                                 Bind(server);
                                 ctx.Provide<IWebApiServer>(server);

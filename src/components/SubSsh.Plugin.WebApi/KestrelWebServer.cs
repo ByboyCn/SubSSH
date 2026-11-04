@@ -36,6 +36,7 @@ public sealed class KestrelWebServer : IWebApiServer
 
     /// <summary>Crypto 插件上线/下线时更新私钥加密器。</summary>
     public void SetCrypto(ICryptoBox? crypto) => _services.Crypto = crypto;
+    public void SetMcpHandler(IMcpHttpHandler? h) => _services.Mcp = h;
 
     public static KestrelWebServer BuildAndStart(ISettings settings, IWebApiStore store, IOAuthService oauth, EventBus events, ICryptoBox? crypto = null)
     {
@@ -103,6 +104,33 @@ public sealed class KestrelWebServer : IWebApiServer
         });
         app.MapGet("/.well-known/oauth-protected-resource", () => ApiRoutes.JsonOut(OAuth.ProtectedResourceMetadata()));
         app.MapGet("/.well-known/oauth-protected-resource/mcp", () => ApiRoutes.JsonOut(OAuth.ProtectedResourceMetadata()));
+        // ── MCP streamable-http（由 McpCore 插件经 IMcpHttpHandler 提供；未上线时 503）──
+        app.MapPost("/mcp", async (HttpContext ctx) =>
+        {
+            if (_services.Mcp is null)
+            {
+                ctx.Response.StatusCode = 503;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.WriteAsync("{\"error\":\"MCP 组件未上线\"}", ctx.RequestAborted);
+                return;
+            }
+            using var reader = new StreamReader(ctx.Request.Body, Encoding.UTF8);
+            var body = await reader.ReadToEndAsync(ctx.RequestAborted);
+            var baseUri = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
+            var call = new McpHttpCall
+            {
+                AuthorizationHeader = ctx.Request.Headers.Authorization.ToString(),
+                Body = body,
+                Resource = baseUri + "/mcp",
+                MetadataUrl = baseUri + "/.well-known/oauth-protected-resource/mcp",
+            };
+            var reply = await _services.Mcp.HandleAsync(call, ctx.RequestAborted);
+            ctx.Response.StatusCode = reply.StatusCode;
+            ctx.Response.ContentType = "application/json";
+            foreach (var (k, v) in reply.Headers) ctx.Response.Headers[k] = v;
+            if (reply.Body != null)
+                await ctx.Response.WriteAsync(reply.Body, ctx.RequestAborted);
+        });
         app.MapGet("/.well-known/oauth-authorization-server", () => ApiRoutes.JsonOut(OAuth.AuthorizationServerMetadata()));
 
         MapApiV1(app);

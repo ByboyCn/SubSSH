@@ -20,6 +20,7 @@ public sealed class ApiServices
     public IWebApiJobManager? Jobs { get; set; }              // TODO(port)：Plugin.Jobs
     public IWebApiFileManager? Files { get; set; }            // TODO(port)：Plugin.Files
     public ICryptoBox? Crypto { get; set; }                   // 私钥入库加密（Plugin.Crypto）
+    public IMcpHttpHandler? Mcp { get; set; }                 // MCP streamable-http 挂载点（Plugin.McpCore）
     public EventBus Events { get; init; }
     public AdminAuth Auth { get; }
 
