@@ -1,4 +1,4 @@
-// API 路由实现：对应原版 internal/webapi/api.go / command_runs.go / memories.go。
+﻿// API 路由实现：对应原版 internal/webapi/api.go / command_runs.go / memories.go。
 // 每个端点路径、方法、状态码、JSON 字段与 Go 版 1:1；错误统一 {"error": "<message>"}。
 namespace SubSsh.Plugin.WebApi;
 
@@ -19,6 +19,7 @@ public sealed class ApiServices
     public IWebApiCommandRunner? Exec { get; set; }           // TODO(port)：Plugin.ExecRunner
     public IWebApiJobManager? Jobs { get; set; }              // TODO(port)：Plugin.Jobs
     public IWebApiFileManager? Files { get; set; }            // TODO(port)：Plugin.Files
+    public ICryptoBox? Crypto { get; set; }                   // 私钥入库加密（Plugin.Crypto）
     public EventBus Events { get; init; }
     public AdminAuth Auth { get; }
 
@@ -83,18 +84,19 @@ public static class ApiRoutes
     /// <summary>服务未上线（对应 Go 版 API 字段为 nil 时的兜底；Go 原版会 panic，这里给 503）。</summary>
     public static IResult Unavailable(string service) => ApiError($"服务未上线: {service}", 503);
 
-    public static bool ParseBody<T>(HttpContext ctx, out T value) where T : class
+    public static async Task<(bool Ok, T? Value, IResult? Error)> ParseBodyAsync<T>(HttpContext ctx) where T : class
     {
         try
         {
-            value = JsonSerializer.Deserialize<T>(ctx.Request.Body, JsonOpts) ?? throw new SubSsh.Core.Abstractions.SubSshException("请求体为空");
-            return true;
+            // 必须先异步缓冲：Kestrel 默认禁用同步 IO（"Synchronous operations are disallowed"）
+            using var ms = new MemoryStream();
+            await ctx.Request.Body.CopyToAsync(ms, ctx.RequestAborted);
+            var value = JsonSerializer.Deserialize<T>(ms.ToArray(), JsonOpts) ?? throw new SubSsh.Core.Abstractions.SubSshException("请求体为空");
+            return (true, value, null);
         }
         catch (Exception e)
         {
-            value = null!;
-            ApiError(e, 400).ExecuteAsync(ctx).GetAwaiter().GetResult();
-            return false;
+            return (false, null, ApiError(e, 400));
         }
     }
 
@@ -145,7 +147,8 @@ public static class ApiRoutes
 
     public static async Task<IResult> HostsCreate(ApiServices a, HttpContext ctx, CancellationToken ct)
     {
-        if (!ParseBody<WebApiHostInput>(ctx, out var input)) return Empty;
+        var (parseOk, input, parseErr) = await ParseBodyAsync<WebApiHostInput>(ctx);
+        if (!parseOk) return parseErr ?? Empty;
         if (a.Hosts is null) return Unavailable("hostmanager");
         try { return JsonOut(await a.Hosts.CreateAsync(input, ct), 201); }
         catch (Exception e) { return ApiError(e, HostErrorStatus(e)); }
@@ -153,7 +156,8 @@ public static class ApiRoutes
 
     public static async Task<IResult> HostUpdate(ApiServices a, long id, HttpContext ctx, CancellationToken ct)
     {
-        if (!ParseBody<WebApiHostInput>(ctx, out var input)) return Empty;
+        var (parseOk, input, parseErr) = await ParseBodyAsync<WebApiHostInput>(ctx);
+        if (!parseOk) return parseErr ?? Empty;
         if (a.Hosts is null) return Unavailable("hostmanager");
         try { return JsonOut(await a.Hosts.UpdateAsync(id, input, ct)); }
         catch (Exception e) { return ApiError(e, HostErrorStatus(e)); }
@@ -203,19 +207,25 @@ public static class ApiRoutes
 
     public static async Task<IResult> KeysCreate(ApiServices a, HttpContext ctx, CancellationToken ct)
     {
-        if (!ParseBody<KeyInput>(ctx, out var input)) return Empty;
+        var (parseOk, input, parseErr) = await ParseBodyAsync<KeyInput>(ctx);
+        if (!parseOk) return parseErr ?? Empty;
         string publicKey;
-        byte[] @private;
+        byte[] privatePem;
         switch (input.Mode)
         {
             case "generate":
-                // TODO(port)：原版 ed25519.GenerateKey + ssh.MarshalPrivateKey（OpenSSH PEM）。
-                // .NET BCL 无 Ed25519 生成/OpenSSH 编码，待引入移植方案后补齐；当前返回 501。
-                return ApiError("ed25519 私钥生成尚未移植（TODO port）", 501);
+            {
+                var (pem, pubLine) = KeyMaterial.Generate(input.Name);
+                publicKey = pubLine;
+                privatePem = Encoding.UTF8.GetBytes(pem);
+                break;
+            }
             case "import":
                 try
                 {
-                    (@private, publicKey) = ImportPrivateKey(input.PrivateKey, input.Passphrase, input.Name);
+                    // 解析校验（仅支持无口令 ed25519），入库保留原始 PEM 文本
+                    (_, publicKey, _) = KeyMaterial.Import(input.PrivateKey);
+                    privatePem = Encoding.UTF8.GetBytes(input.PrivateKey);
                 }
                 catch (Exception e) { return ApiError(e, 400); }
                 break;
@@ -224,19 +234,18 @@ public static class ApiRoutes
         }
         try
         {
-            // TODO(port)：原版此处经 a.Box.Seal 加密私钥入库；加密由 Plugin.Crypto 的 ICryptoBox 负责，
-            // IWebApiStore.CreateKeyAsync 契约约定传入的 privateKeyEnc 已是密文，故这里先原样透传（占位）。
-            Array.Clear(@private);
-            var key = await a.Store.CreateKeyAsync(input.Name, Encoding.UTF8.GetBytes(input.PrivateKey), publicKey, ct);
+            // 私钥入库加密：Crypto 插件在线时 AES-GCM Seal；离线时原样透传（明确标注未加密）
+            var enc = a.Crypto is null
+                ? privatePem
+                : await a.Crypto.SealAsync(privatePem, ct);
+            var key = await a.Store.CreateKeyAsync(input.Name, enc, publicKey, ct);
+            if (a.Crypto is null) return JsonOut(key, 201);
             return JsonOut(key, 201);
         }
-        catch (Exception e) { return ApiError(e, 409); }
+        catch (Exception e) { Console.Error.WriteLine("[keys] create failed: " + e); return ApiError(e, 409); }
     }
 
     /// <summary>TODO(port)：原版 ssh.ParsePrivateKey(+Passphrase) 解析并重编码 OpenSSH 私钥；需等价私钥解析库。</summary>
-    private static (byte[] Private, string Public) ImportPrivateKey(string pem, string passphrase, string comment)
-        => throw new SubSsh.Core.Abstractions.SubSshException("私钥导入尚未移植（TODO port：需 OpenSSH 私钥解析/编码库）");
-
     public static async Task<IResult> KeyDelete(ApiServices a, long id, CancellationToken ct)
     {
         try { await a.Store.DeleteKeyAsync(id, ct); return Results.NoContent(); }
@@ -280,7 +289,8 @@ public static class ApiRoutes
 
     public static async Task<IResult> TokensCreate(ApiServices a, HttpContext ctx, CancellationToken ct)
     {
-        if (!ParseBody<TokenInput>(ctx, out var input)) return Empty;
+        var (parseOk, input, parseErr) = await ParseBodyAsync<TokenInput>(ctx);
+        if (!parseOk) return parseErr ?? Empty;
         if (!NormalizeTokenDisabledTools(input.DisabledTools, out var disabled, out var err)) return err!;
         // 对齐 Go：32 随机字节 + "osh_" 前缀 + RawURLEncoding。
         var raw = new byte[32];
@@ -304,7 +314,8 @@ public static class ApiRoutes
 
     public static async Task<IResult> TokenUpdate(ApiServices a, long id, HttpContext ctx, CancellationToken ct)
     {
-        if (!ParseBody<TokenInput>(ctx, out var input)) return Empty;
+        var (parseOk, input, parseErr) = await ParseBodyAsync<TokenInput>(ctx);
+        if (!parseOk) return parseErr ?? Empty;
         if (!NormalizeTokenDisabledTools(input.DisabledTools, out var disabled, out var err)) return err!;
         long[] hostIds;
         if (input.AllHosts) hostIds = [];

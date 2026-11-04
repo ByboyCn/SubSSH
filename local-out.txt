@@ -1,0 +1,94 @@
+SubSsh dev-skeleton 宿主启动，插件目录 D:\source\SubSSHMCP\src\core\SubSsh.Host\bin\Release\net10.0\plugins
+目录中共 20 个插件，输入 :list 查看，:load * 全量加载
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:19081
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\source\SubSSHMCP
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:19080
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\source\SubSSHMCP
+crypto: 已加载
+db: 已加载
+exec-runner: 已加载
+files: 已加载
+host-manager: 已加载
+mcp-core: 已加载
+mcp-http: 已加载
+mcp-stdio: 已加载
+memory: 已加载
+monitor: 已加载
+oauth: 已加载
+search: 已加载
+ssh-pool: 已加载
+tool-groups: 已加载
+tools-exec: 已加载
+tools-files: 已加载
+tools-hosts: 已加载
+tools-jobs: 已加载
+tools-memory: 已加载
+webapi: 已加载
+  插件 crypto
+  插件 db
+  插件 exec-runner
+  插件 files
+  插件 host-manager
+  插件 mcp-core
+  插件 mcp-http
+  插件 mcp-stdio
+  插件 memory
+  插件 monitor
+  插件 oauth
+  插件 search
+  插件 ssh-pool
+  插件 tool-groups
+  插件 tools-exec
+  插件 tools-files
+  插件 tools-hosts
+  插件 tools-jobs
+  插件 tools-memory
+  插件 webapi
+  ISettings ← host
+  ISubSshStore ← db
+  IOAuthService ← oauth
+  IWebApiServer ← webapi
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://127.0.0.1:19080/healthz - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /healthz'
+info: Microsoft.AspNetCore.Http.Result.ContentResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.ContentResult[2]
+      Write content with HTTP Response ContentType of application/json
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /healthz'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://127.0.0.1:19080/healthz - 200 39 application/json 297.3150ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://127.0.0.1:19080/api/v1/auth/login - application/json 24
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: POST /api/v1/auth/login'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: POST /api/v1/auth/login'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://127.0.0.1:19080/api/v1/auth/login - 200 - application/json 40.2225ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://127.0.0.1:19080/api/v1/keys - application/json 31
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: POST /api/v1/keys'
+info: Microsoft.AspNetCore.Http.Result.ContentResult[1]
+      Setting HTTP status code 409.
+info: Microsoft.AspNetCore.Http.Result.ContentResult[2]
+      Write content with HTTP Response ContentType of application/json
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: POST /api/v1/keys'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://127.0.0.1:19080/api/v1/keys - 409 63 application/json 1106.9866ms

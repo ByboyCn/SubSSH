@@ -33,7 +33,10 @@ public sealed class AesGcmCryptoBox : ICryptoBox, IDisposable
     {
         var blob = new byte[NonceSize + plain.Length + TagSize];
         RandomNumberGenerator.Fill(blob.AsSpan(0, NonceSize));
-        _aead.Encrypt(blob.AsSpan(0, NonceSize), plain, blob.AsSpan(NonceSize), null);
+        // .NET 10 起 tag 必须显式传段（空 tag 跨度被视为"不含 tag"，长度校验会失败）
+        var cipher = blob.AsSpan(NonceSize, plain.Length);
+        var tag = blob.AsSpan(NonceSize + plain.Length, TagSize);
+        _aead.Encrypt(blob.AsSpan(0, NonceSize), plain, cipher, tag, null);
         return Task.FromResult(blob);
     }
 
@@ -45,7 +48,9 @@ public sealed class AesGcmCryptoBox : ICryptoBox, IDisposable
         var plain = new byte[blob.Length - NonceSize - TagSize];
         try
         {
-            _aead.Decrypt(blob.AsSpan(0, NonceSize), blob.AsSpan(NonceSize), plain, null);
+            var cipher = blob.AsSpan(NonceSize, plain.Length);
+            var tag = blob.AsSpan(NonceSize + plain.Length, TagSize);
+            _aead.Decrypt(blob.AsSpan(0, NonceSize), cipher, tag, plain, null);
         }
         catch (AuthenticationTagMismatchException ex)
         {

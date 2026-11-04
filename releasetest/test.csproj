@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="SubSsh.Plugin.WebApi"><HintPath>D:\source\SubSSHMCP\src\components\SubSsh.Plugin.WebApi\bin\Release\net10.0\SubSsh.Plugin.WebApi.dll</HintPath></Reference>
+    <Reference Include="SubSsh.Plugin.Crypto"><HintPath>D:\source\SubSSHMCP\src\apps\SubSsh.Plugin.Crypto\bin\Release\net10.0\SubSsh.Plugin.Crypto.dll</HintPath></Reference>
+    <Reference Include="SubSsh.Core"><HintPath>D:\source\SubSSHMCP\src\core\SubSsh.Core\bin\Release\net10.0\SubSsh.Core.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

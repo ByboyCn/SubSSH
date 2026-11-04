@@ -24,18 +24,22 @@ public sealed class KestrelWebServer : IWebApiServer
 
     public string Listen => _settings.Listen;
 
-    public KestrelWebServer(ISettings settings, IWebApiStore store, IOAuthService oauth, EventBus events)
+    public KestrelWebServer(ISettings settings, IWebApiStore store, IOAuthService oauth, EventBus events, ICryptoBox? crypto = null)
     {
         _settings = settings;
         _services = new ApiServices(settings, store, events);
+        _services.Crypto = crypto;
         OAuth = oauth;
     }
 
     public IOAuthService OAuth { get; set; }
 
-    public static KestrelWebServer BuildAndStart(ISettings settings, IWebApiStore store, IOAuthService oauth, EventBus events)
+    /// <summary>Crypto 插件上线/下线时更新私钥加密器。</summary>
+    public void SetCrypto(ICryptoBox? crypto) => _services.Crypto = crypto;
+
+    public static KestrelWebServer BuildAndStart(ISettings settings, IWebApiStore store, IOAuthService oauth, EventBus events, ICryptoBox? crypto = null)
     {
-        var server = new KestrelWebServer(settings, store, oauth, events);
+        var server = new KestrelWebServer(settings, store, oauth, events, crypto);
         server.StartAsync().GetAwaiter().GetResult();
         return server;
     }

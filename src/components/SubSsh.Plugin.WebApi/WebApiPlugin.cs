@@ -1,4 +1,4 @@
-// SubSsh.Plugin.WebApi — 公共 Web 组件插件（可插拔、可任意替换）。
+﻿// SubSsh.Plugin.WebApi — 公共 Web 组件插件（可插拔、可任意替换）。
 // Requires：ISettings、ISubSshStoreFull（构造 WebApiStoreAdapter 适配为 IWebApiStore 并 Provide）、
 // IOAuthService（必需）+ IWebApiHostManager/IWebApiConnectionPool/IWebApiCommandRunner/
 // IWebApiJobManager/IWebApiFileManager（可选，上线自动绑入、下线自动解绑）。
@@ -54,7 +54,9 @@ public sealed class WebApiPlugin : IComponent
                             oauth =>
                             {
                                 if (server != null) { ctx.Provide<IWebApiServer>(server); ctx.Provide<IWebApiEventBus>(sse); return; }
-                                server = KestrelWebServer.BuildAndStart(settings, adapter, oauth, events);
+                                                            server = KestrelWebServer.BuildAndStart(settings, adapter, oauth, events);
+                            ctx.Require<ICryptoBox>(c => server.SetCrypto(c), () => server.SetCrypto(null));
+                                // Crypto 插件上线后私钥入库自动加密
                                 Bind(server);
                                 ctx.Provide<IWebApiServer>(server);
                                 ctx.Provide<IWebApiEventBus>(sse);

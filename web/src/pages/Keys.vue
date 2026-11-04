@@ -29,6 +29,12 @@ const form = reactive<{ name: string; mode: 'generate' | 'import'; privateKey: s
   passphrase: '',
 })
 
+async function onKeyFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  form.privateKey = await file.text()
+}
+
 function openCreate() {
   form.name = ''
   form.mode = 'generate'
@@ -115,8 +121,12 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString()
         </div>
         <template v-if="form.mode === 'import'">
           <div>
-            <label class="label">私钥（OpenSSH/PEM）</label>
-            <textarea v-model="form.privateKey" required rows="6" class="input font-mono text-xs" />
+            <label class="label">私钥文件（OpenSSH/PEM，自动读取）</label>
+            <input type="file" accept=".pem,.key,.pub,.txt,*" class="text-sm" @change="onKeyFile" />
+          </div>
+          <div>
+            <label class="label">私钥内容（可手动粘贴，与文件二选一）</label>
+            <textarea v-model="form.privateKey" required rows="6" class="input font-mono text-xs" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" />
           </div>
           <div>
             <label class="label">私钥口令（可选，服务端解密后丢弃）</label>
