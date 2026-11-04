@@ -1,4 +1,4 @@
-﻿// API 路由实现：对应原版 internal/webapi/api.go / command_runs.go / memories.go。
+// API 路由实现：对应原版 internal/webapi/api.go / command_runs.go / memories.go。
 // 每个端点路径、方法、状态码、JSON 字段与 Go 版 1:1；错误统一 {"error": "<message>"}。
 namespace SubSsh.Plugin.WebApi;
 
@@ -65,6 +65,7 @@ public static class ApiRoutes
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true, // 兼容入参 snake/camel 混用（原版 Go 大小写不敏感匹配）
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never,
     };
 

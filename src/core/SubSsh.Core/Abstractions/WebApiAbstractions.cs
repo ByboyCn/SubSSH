@@ -31,153 +31,153 @@ public static class WebApiHostErrorMapper
 // ── 主机 DTO（store/models.go HostView 与 hostmanager.Input 的 json tag）──
 public sealed record WebApiHostInput
 {
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("addr")] public string Addr { get; init; } = "";
-    [JsonPropertyName("port")] public int Port { get; init; }
-    [JsonPropertyName("username")] public string Username { get; init; } = "";
-    [JsonPropertyName("auth_type")] public string AuthType { get; init; } = "";
+    public string Name { get; init; } = "";
+    public string Addr { get; init; } = "";
+    public int Port { get; init; }
+    public string Username { get; init; } = "";
+    public string AuthType { get; init; } = "";
     /// <summary>仅在创建/更新请求中出现，不回显。</summary>
-    [JsonPropertyName("password")] public string Password { get; init; } = "";
-    [JsonPropertyName("key_id")] public long? KeyId { get; init; }
-    [JsonPropertyName("jump_host_id")] public long? JumpHostId { get; init; }
-    [JsonPropertyName("monitor_enabled")] public bool MonitorEnabled { get; init; }
-    [JsonPropertyName("tags")] public string[] Tags { get; init; } = [];
+    public string Password { get; init; } = "";
+    public long? KeyId { get; init; }
+    public long? JumpHostId { get; init; }
+    public bool MonitorEnabled { get; init; }
+    public string[] Tags { get; init; } = [];
 }
 
 public sealed record WebApiHostView
 {
-    [JsonPropertyName("id")] public long Id { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("addr")] public string Addr { get; init; } = "";
-    [JsonPropertyName("port")] public int Port { get; init; }
-    [JsonPropertyName("username")] public string Username { get; init; } = "";
-    [JsonPropertyName("auth_type")] public string AuthType { get; init; } = "";
-    [JsonPropertyName("key_id")] public long? KeyId { get; init; }
-    [JsonPropertyName("hostkey_fp")] public string? HostKeyFp { get; init; }
-    [JsonPropertyName("jump_host_id")] public long? JumpHostId { get; init; }
-    [JsonPropertyName("monitor_enabled")] public bool MonitorEnabled { get; init; }
-    [JsonPropertyName("tags")] public string[] Tags { get; init; } = [];
-    [JsonPropertyName("created_at")] public long CreatedAt { get; init; }
-    [JsonPropertyName("archived")] public bool Archived { get; init; }
-    [JsonPropertyName("archived_at")] public long? ArchivedAt { get; init; }
+    public long Id { get; init; }
+    public string Name { get; init; } = "";
+    public string Addr { get; init; } = "";
+    public int Port { get; init; }
+    public string Username { get; init; } = "";
+    public string AuthType { get; init; } = "";
+    public long? KeyId { get; init; }
+    public string? HostKeyFp { get; init; }
+    public long? JumpHostId { get; init; }
+    public bool MonitorEnabled { get; init; }
+    public string[] Tags { get; init; } = [];
+    public long CreatedAt { get; init; }
+    public bool Archived { get; init; }
+    public long? ArchivedAt { get; init; }
 }
 
 /// <summary>主机连通性测试结果（hostmanager.Test 返回结构）。</summary>
-public sealed record WebApiHostTestResult([property: JsonPropertyName("ok")] bool Ok, [property: JsonPropertyName("error")] string? Error);
+public sealed record WebApiHostTestResult(bool Ok, string? Error);
 
 // ── 密钥 DTO（store.Key；PrivateKeyEnc 带 json:"-" 不出网）──
 public sealed record WebApiKeyView(
-    [property: JsonPropertyName("id")] long Id,
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("public_key")] string PublicKey,
-    [property: JsonPropertyName("created_at")] long CreatedAt);
+    long Id,
+    string Name,
+    string PublicKey,
+    long CreatedAt);
 
 // ── 令牌 DTO（store.Token + webapi.tokenView）──
 public sealed record WebApiToken
 {
-    [JsonPropertyName("id")] public long Id { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("all_hosts")] public bool AllHosts { get; init; }
-    [JsonPropertyName("manage_hosts")] public bool ManageHosts { get; init; }
-    [JsonPropertyName("disabled_tools")] public string[] DisabledTools { get; init; } = [];
-    [JsonPropertyName("source")] public string Source { get; init; } = "";
-    [JsonPropertyName("created_at")] public long CreatedAt { get; init; }
+    public long Id { get; init; }
+    public string Name { get; init; } = "";
+    public bool AllHosts { get; init; }
+    public bool ManageHosts { get; init; }
+    public string[] DisabledTools { get; init; } = [];
+    public string Source { get; init; } = "";
+    public long CreatedAt { get; init; }
 }
 
 public sealed record WebApiTokenCreate
 {
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("hash")] public string Hash { get; init; } = "";
-    [JsonPropertyName("all_hosts")] public bool AllHosts { get; init; }
-    [JsonPropertyName("manage_hosts")] public bool ManageHosts { get; init; }
-    [JsonPropertyName("disabled_tools")] public string[] DisabledTools { get; init; } = [];
-    [JsonPropertyName("host_ids")] public long[] HostIds { get; init; } = [];
+    public string Name { get; init; } = "";
+    public string Hash { get; init; } = "";
+    public bool AllHosts { get; init; }
+    public bool ManageHosts { get; init; }
+    public string[] DisabledTools { get; init; } = [];
+    public long[] HostIds { get; init; } = [];
 }
 
 public sealed record WebApiTokenUpdate
 {
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("all_hosts")] public bool AllHosts { get; init; }
-    [JsonPropertyName("manage_hosts")] public bool ManageHosts { get; init; }
-    [JsonPropertyName("host_ids")] public long[] HostIds { get; init; } = [];
-    [JsonPropertyName("disabled_tools")] public string[] DisabledTools { get; init; } = [];
+    public string Name { get; init; } = "";
+    public bool AllHosts { get; init; }
+    public bool ManageHosts { get; init; }
+    public long[] HostIds { get; init; } = [];
+    public string[] DisabledTools { get; init; } = [];
 }
 
 /// <summary>令牌视图：Token 字段 + host_ids（可选）+ token 明文（仅创建响应，omitempty）。</summary>
 public sealed record WebApiTokenView
 {
-    [JsonPropertyName("id")] public long Id { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("all_hosts")] public bool AllHosts { get; init; }
-    [JsonPropertyName("manage_hosts")] public bool ManageHosts { get; init; }
-    [JsonPropertyName("disabled_tools")] public string[] DisabledTools { get; init; } = [];
-    [JsonPropertyName("source")] public string Source { get; init; } = "";
-    [JsonPropertyName("created_at")] public long CreatedAt { get; init; }
-    [JsonPropertyName("host_ids")] public long[]? HostIds { get; init; }
-    [JsonPropertyName("token")] public string? Token { get; init; }
+    public long Id { get; init; }
+    public string Name { get; init; } = "";
+    public bool AllHosts { get; init; }
+    public bool ManageHosts { get; init; }
+    public string[] DisabledTools { get; init; } = [];
+    public string Source { get; init; } = "";
+    public long CreatedAt { get; init; }
+    public long[]? HostIds { get; init; }
+    public string? Token { get; init; }
 }
 
 // ── 任务 DTO（store.Job）──
 public sealed record WebApiJob
 {
-    [JsonPropertyName("id")] public string Id { get; init; } = "";
-    [JsonPropertyName("host_id")] public long HostId { get; init; }
-    [JsonPropertyName("command")] public string Command { get; init; } = "";
-    [JsonPropertyName("cwd")] public string Cwd { get; init; } = "";
-    [JsonPropertyName("pid")] public long? Pid { get; init; }
-    [JsonPropertyName("used_setsid")] public bool UsedSetsid { get; init; }
-    [JsonPropertyName("status")] public string Status { get; init; } = "";
-    [JsonPropertyName("exit_code")] public long? ExitCode { get; init; }
-    [JsonPropertyName("log_bytes")] public long LogBytes { get; init; }
-    [JsonPropertyName("started_at")] public long StartedAt { get; init; }
-    [JsonPropertyName("finished_at")] public long? FinishedAt { get; init; }
+    public string Id { get; init; } = "";
+    public long HostId { get; init; }
+    public string Command { get; init; } = "";
+    public string Cwd { get; init; } = "";
+    public long? Pid { get; init; }
+    public bool UsedSetsid { get; init; }
+    public string Status { get; init; } = "";
+    public long? ExitCode { get; init; }
+    public long LogBytes { get; init; }
+    public long StartedAt { get; init; }
+    public long? FinishedAt { get; init; }
 }
 
 // ── 审计视图（store.Audit 的 Go 默认 JSON 键名：ID/Ts/TokenID/.../ParamsJSON/OK/DurationMS/BytesOut；
 //    Go 的 sql.Null* 包装在这里简化为「值或 null」——已列入移植差异报告）──
 public sealed record WebApiAuditView
 {
-    [JsonPropertyName("ID")] public long Id { get; init; }
-    [JsonPropertyName("Ts")] public long Ts { get; init; }
-    [JsonPropertyName("TokenID")] public long? TokenId { get; init; }
-    [JsonPropertyName("TokenName")] public string? TokenName { get; init; }
-    [JsonPropertyName("Tool")] public string Tool { get; init; } = "";
-    [JsonPropertyName("Host")] public string? Host { get; init; }
-    [JsonPropertyName("ParamsJSON")] public string ParamsJson { get; init; } = "";
-    [JsonPropertyName("RunIDs")] public string[]? RunIds { get; init; }
-    [JsonPropertyName("OK")] public bool Ok { get; init; }
-    [JsonPropertyName("ExitCode")] public long? ExitCode { get; init; }
-    [JsonPropertyName("DurationMS")] public long DurationMs { get; init; }
-    [JsonPropertyName("BytesOut")] public long BytesOut { get; init; }
+    public long Id { get; init; }
+    public long Ts { get; init; }
+    public long? TokenId { get; init; }
+    public string? TokenName { get; init; }
+    public string Tool { get; init; } = "";
+    public string? Host { get; init; }
+    public string ParamsJson { get; init; } = "";
+    public string[]? RunIds { get; init; }
+    public bool Ok { get; init; }
+    public long? ExitCode { get; init; }
+    public long DurationMs { get; init; }
+    public long BytesOut { get; init; }
 }
 
 // ── 命令执行记录（command_runs.go commandRunView）──
 public sealed record WebApiCommandRun
 {
-    [JsonPropertyName("seq")] public long Seq { get; init; }
-    [JsonPropertyName("id")] public string Id { get; init; } = "";
-    [JsonPropertyName("token_id")] public long? TokenId { get; init; }
-    [JsonPropertyName("token_name")] public string? TokenName { get; init; }
-    [JsonPropertyName("tool")] public string Tool { get; init; } = "";
-    [JsonPropertyName("host_id")] public long? HostId { get; init; }
-    [JsonPropertyName("host")] public string Host { get; init; } = "";
-    [JsonPropertyName("command")] public string Command { get; init; } = "";
-    [JsonPropertyName("cwd")] public string Cwd { get; init; } = "";
-    [JsonPropertyName("session")] public string? Session { get; init; }
-    [JsonPropertyName("job_id")] public string? JobId { get; init; }
-    [JsonPropertyName("status")] public string Status { get; init; } = "";
-    [JsonPropertyName("exit_code")] public long? ExitCode { get; init; }
-    [JsonPropertyName("stdout_bytes")] public long StdoutBytes { get; init; }
-    [JsonPropertyName("stderr_bytes")] public long StderrBytes { get; init; }
-    [JsonPropertyName("output_available")] public bool OutputAvailable { get; init; }
-    [JsonPropertyName("output_expired")] public bool OutputExpired { get; init; }
-    [JsonPropertyName("output_error")] public string? OutputError { get; init; }
-    [JsonPropertyName("error")] public string? Error { get; init; }
-    [JsonPropertyName("started_at")] public long StartedAt { get; init; }
-    [JsonPropertyName("finished_at")] public long? FinishedAt { get; init; }
-    [JsonPropertyName("stdout_preview")] public string? StdoutPreview { get; init; }
-    [JsonPropertyName("stderr_preview")] public string? StderrPreview { get; init; }
-    [JsonPropertyName("duration_ms")] public long DurationMs { get; init; }
+    public long Seq { get; init; }
+    public string Id { get; init; } = "";
+    public long? TokenId { get; init; }
+    public string? TokenName { get; init; }
+    public string Tool { get; init; } = "";
+    public long? HostId { get; init; }
+    public string Host { get; init; } = "";
+    public string Command { get; init; } = "";
+    public string Cwd { get; init; } = "";
+    public string? Session { get; init; }
+    public string? JobId { get; init; }
+    public string Status { get; init; } = "";
+    public long? ExitCode { get; init; }
+    public long StdoutBytes { get; init; }
+    public long StderrBytes { get; init; }
+    public bool OutputAvailable { get; init; }
+    public bool OutputExpired { get; init; }
+    public string? OutputError { get; init; }
+    public string? Error { get; init; }
+    public long StartedAt { get; init; }
+    public long? FinishedAt { get; init; }
+    public string? StdoutPreview { get; init; }
+    public string? StderrPreview { get; init; }
+    public long DurationMs { get; init; }
 }
 
 public sealed record WebApiCommandRunFilter
@@ -193,20 +193,20 @@ public sealed record WebApiCommandRunFilter
 
 /// <summary>输出分块（execx/jobs LogChunk 返回：{"content","complete",...}）。</summary>
 public sealed record WebApiOutputChunk(
-    [property: JsonPropertyName("content")] string Content,
-    [property: JsonPropertyName("complete")] bool Complete,
-    [property: JsonPropertyName("total_bytes")] long? TotalBytes = null,
-    [property: JsonPropertyName("error")] string? Error = null);
+    string Content,
+    bool Complete,
+    long? TotalBytes = null,
+    string? Error = null);
 
 // ── 监控（monitor.FromMetric 近似：ts/cpu/mem/load/disks；已列入差异报告）──
 public sealed record WebApiMetricSnapshot
 {
-    [JsonPropertyName("ts")] public long Ts { get; init; }
-    [JsonPropertyName("cpu_pct")] public double? CpuPct { get; init; }
-    [JsonPropertyName("mem_used_kb")] public long? MemUsedKb { get; init; }
-    [JsonPropertyName("mem_total_kb")] public long? MemTotalKb { get; init; }
-    [JsonPropertyName("load1")] public double? Load1 { get; init; }
-    [JsonPropertyName("disks")] public string DisksJson { get; init; } = "";
+    public long Ts { get; init; }
+    public double? CpuPct { get; init; }
+    public long? MemUsedKb { get; init; }
+    public long? MemTotalKb { get; init; }
+    public double? Load1 { get; init; }
+    public string DisksJson { get; init; } = "";
 }
 
 public sealed record WebApiMetric(long HostId, long Ts, double? CpuPct, long? MemUsedKb, long? MemTotalKb, double? Load1, string DisksJson);
@@ -214,41 +214,41 @@ public sealed record WebApiMetric(long HostId, long Ts, double? CpuPct, long? Me
 // ── 记忆 DTO（memories.go + store.MemoryAdminRow / MemoryBankStat）──
 public sealed record WebApiMemoryAdminRow
 {
-    [JsonPropertyName("id")] public long Id { get; init; }
-    [JsonPropertyName("host_id")] public long? HostId { get; init; }
-    [JsonPropertyName("host_name")] public string? HostName { get; init; }
-    [JsonPropertyName("content")] public string Content { get; init; } = "";
-    [JsonPropertyName("source")] public string Source { get; init; } = "";
-    [JsonPropertyName("importance")] public double Importance { get; init; }
-    [JsonPropertyName("veracity")] public string Veracity { get; init; } = "";
-    [JsonPropertyName("created_at")] public long CreatedAt { get; init; }
-    [JsonPropertyName("updated_at")] public long UpdatedAt { get; init; }
-    [JsonPropertyName("recall_count")] public long RecallCount { get; init; }
+    public long Id { get; init; }
+    public long? HostId { get; init; }
+    public string? HostName { get; init; }
+    public string Content { get; init; } = "";
+    public string Source { get; init; } = "";
+    public double Importance { get; init; }
+    public string Veracity { get; init; } = "";
+    public long CreatedAt { get; init; }
+    public long UpdatedAt { get; init; }
+    public long RecallCount { get; init; }
 }
 
 public sealed record WebApiMemoryBankStatRaw(long? HostId, long Count, long Embedded, long? LastWritten);
 
 /// <summary>memoryAdminBankStat（GET /memories/stats 响应元素）。</summary>
 public sealed record WebApiMemoryBankStat(
-    [property: JsonPropertyName("host_id")] long? HostId,
-    [property: JsonPropertyName("host_name")] string? HostName,
-    [property: JsonPropertyName("count")] long Count,
-    [property: JsonPropertyName("embedded")] long Embedded,
-    [property: JsonPropertyName("last_written")] long? LastWritten);
+    long? HostId,
+    string? HostName,
+    long Count,
+    long Embedded,
+    long? LastWritten);
 
 // ── 文件 DTO（files.List / files.Write 返回；近似字段，已列入差异报告）──
 public sealed record WebApiFileItem(
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("path")] string Path,
-    [property: JsonPropertyName("is_dir")] bool IsDir,
-    [property: JsonPropertyName("size")] long Size,
-    [property: JsonPropertyName("mtime")] long Mtime,
-    [property: JsonPropertyName("mode")] string? Mode = null);
+    string Name,
+    string Path,
+    bool IsDir,
+    long Size,
+    long Mtime,
+    string? Mode = null);
 
 public sealed record WebApiFileWriteResult(
-    [property: JsonPropertyName("path")] string Path,
-    [property: JsonPropertyName("size")] long Size,
-    [property: JsonPropertyName("sha256")] string Sha256);
+    string Path,
+    long Size,
+    string Sha256);
 
 /// <summary>SFTP 读取句柄：内容流 + 大小（对齐 files.OpenRead(file, size)）。</summary>
 public sealed record WebApiFileReadStream(Stream Content, long Size) : IAsyncDisposable
@@ -261,9 +261,9 @@ public sealed record WebApiFileReadStream(Stream Content, long Size) : IAsyncDis
 
 // ── 事件（events.Event：SSE data 载荷 {"type","ts","data"}）──
 public sealed record WebApiEvent(
-    [property: JsonPropertyName("type")] string Type,
-    [property: JsonPropertyName("ts")] long Ts,
-    [property: JsonPropertyName("data")] object? Data);
+    string Type,
+    long Ts,
+    object? Data);
 
 /// <summary>SSE 订阅句柄（TryRead 拉取下一条，无消息返回 null；Dispose 退订）。</summary>
 public sealed class WebApiEventSubscription : IDisposable
