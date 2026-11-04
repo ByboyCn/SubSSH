@@ -54,14 +54,19 @@ public sealed class KestrelWebServer : IWebApiServer
         builder.Services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 100L << 20 + 1);
         var app = builder.Build();
 
-        // ── 认证中间件（auth.go Require）：/api/v1/*、/api/events、/api/ws/terminal 需要会话；/api/login 开放。──
+        // ── 认证中间件（auth.go Require）：/api/v1/*（除登录端点）、/api/events、/api/ws/terminal 需要会话。──
         app.Use(async (ctx, next) =>
         {
             var path = ctx.Request.Path.Value ?? "";
+            var isLoginEndpoint =
+                path == "/api/login" ||
+                path == "/api/v1/login" ||            // 原版 Go mux: POST /api/v1/login
+                path == "/api/v1/auth/login";         // Web 前端 client.ts 使用的登录端点
             var needsAuth =
-                path.StartsWith("/api/v1", StringComparison.Ordinal) ||
-                path.StartsWith("/api/events", StringComparison.Ordinal) ||
-                path.StartsWith("/api/ws/terminal", StringComparison.Ordinal);
+                !isLoginEndpoint &&
+                (path.StartsWith("/api/v1", StringComparison.Ordinal) ||
+                 path.StartsWith("/api/events", StringComparison.Ordinal) ||
+                 path.StartsWith("/api/ws/terminal", StringComparison.Ordinal));
             if (!needsAuth || _services.Auth.IsValid(_services.Auth.GetSessionCookie(ctx), DateTimeOffset.UtcNow))
             {
                 await next(ctx);
@@ -72,35 +77,12 @@ public sealed class KestrelWebServer : IWebApiServer
             await ctx.Response.WriteAsync("unauthorized", ctx.RequestAborted);
         });
 
-        // ── 登录（auth.go Login）：POST /api/login {"password"} → Set-Cookie + {"ok":true}。──
-        app.MapPost("/api/login", async (HttpContext ctx) =>
-        {
-            JsonDocument doc;
-            try
-            {
-                using var ms = new MemoryStream();
-                await ctx.Request.Body.CopyToAsync(ms, ctx.RequestAborted);
-                doc = JsonDocument.Parse(Encoding.UTF8.GetString(ms.ToArray()));
-            }
-            catch
-            {
-                ctx.Response.StatusCode = 401;
-                ctx.Response.ContentType = "text/plain; charset=utf-8";
-                await ctx.Response.WriteAsync("密码错误");
-                return;
-            }
-            var password = doc.RootElement.TryGetProperty("password", out var p) ? p.GetString() : null;
-            if (!_services.Auth.CheckPassword(password))
-            {
-                ctx.Response.StatusCode = 401;
-                ctx.Response.ContentType = "text/plain; charset=utf-8";
-                await ctx.Response.WriteAsync("密码错误");
-                return;
-            }
-            _services.Auth.SetSessionCookie(ctx);
-            ctx.Response.ContentType = "application/json";
-            await ctx.Response.WriteAsync("{\"ok\":true}");
-        });
+        // ── 登录（auth.go Login）：POST {"password"} → Set-Cookie + {"ok":true}。
+        //    三个别名：/api/login（早期实现）、/api/v1/login（原版 Go 路由）、/api/v1/auth/login（Web 前端）。──
+        Task LoginHandler(HttpContext ctx) => AuthLoginAsync(ctx);
+        app.MapPost("/api/login", (HttpContext ctx) => LoginHandler(ctx));
+        app.MapPost("/api/v1/login", (HttpContext ctx) => LoginHandler(ctx));
+        app.MapPost("/api/v1/auth/login", (HttpContext ctx) => LoginHandler(ctx));
 
         // ── OAuth / 健康检查（宿主级，不属于 /api/v1）──
         app.MapGet("/healthz", async (CancellationToken ct) =>
@@ -122,6 +104,36 @@ public sealed class KestrelWebServer : IWebApiServer
         MapApiV1(app);
         MapEvents(app);
         MapTerminal(app);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        async Task AuthLoginAsync(HttpContext ctx)
+        {
+            JsonDocument doc;
+            try
+            {
+                using var ms = new MemoryStream();
+                await ctx.Request.Body.CopyToAsync(ms, ctx.RequestAborted);
+                doc = JsonDocument.Parse(Encoding.UTF8.GetString(ms.ToArray()));
+            }
+            catch
+            {
+                ctx.Response.StatusCode = 401;
+                ctx.Response.ContentType = "text/plain; charset=utf-8";
+                await ctx.Response.WriteAsync("密码错误", ctx.RequestAborted);
+                return;
+            }
+            var password = doc.RootElement.TryGetProperty("password", out var p) ? p.GetString() : null;
+            if (!_services.Auth.CheckPassword(password))
+            {
+                ctx.Response.StatusCode = 401;
+                ctx.Response.ContentType = "text/plain; charset=utf-8";
+                await ctx.Response.WriteAsync("密码错误", ctx.RequestAborted);
+                return;
+            }
+            _services.Auth.SetSessionCookie(ctx);
+            ctx.Response.ContentType = "application/json";
+            await ctx.Response.WriteAsync("{\"ok\":true}", ctx.RequestAborted);
+        }
 
         // SPA 托管：优先插件自身目录下的 dist（随插件部署），退回宿主 BaseDirectory\dist。
         // 静态文件根必须显式指向 dist（默认 WebRoot=wwwroot，插件宿主下不存在）。
