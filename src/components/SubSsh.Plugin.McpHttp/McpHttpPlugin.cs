@@ -66,6 +66,8 @@ public sealed class McpHttpPlugin : IComponent
                 MetadataUrl = metadataUrl,
             }, http.RequestAborted).ConfigureAwait(false);
             http.Response.StatusCode = reply.StatusCode;
+            // streamable-http 规范：初始化响应须带会话 id（本实现无状态，回固定 id 即可）
+            http.Response.Headers["MCP-Session-Id"] = "subssh-stateless";
             foreach (var (k, v) in reply.Headers)
                 http.Response.Headers[k] = v;
             if (reply.Body != null)
