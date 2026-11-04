@@ -125,8 +125,9 @@ public sealed class KestrelWebServer : IWebApiServer
                 MetadataUrl = baseUri + "/.well-known/oauth-protected-resource/mcp",
             };
             var reply = await _services.Mcp.HandleAsync(call, ctx.RequestAborted);
-            ctx.Response.StatusCode = reply.StatusCode;
+            ctx.Response.StatusCode = reply.Body == null ? 202 : reply.StatusCode; // 通知 → 202 Accepted
             ctx.Response.ContentType = "application/json";
+            ctx.Response.Headers["MCP-Session-Id"] = "subssh-http"; // streamable-http 会话标识（无状态实现）
             foreach (var (k, v) in reply.Headers) ctx.Response.Headers[k] = v;
             if (reply.Body != null)
                 await ctx.Response.WriteAsync(reply.Body, ctx.RequestAborted);
