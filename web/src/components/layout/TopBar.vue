@@ -10,12 +10,21 @@ const auth = useAuthStore()
 
 const title = computed(() => titleForPath(route.path))
 
-/** 主题切换占位：持久化偏好与样式变量待接入 */
-const theme = ref<'dark' | 'light'>('dark')
+/** 主题切换：html.light 类 + localStorage 持久化（main.ts 启动时恢复） */
+type Theme = 'dark' | 'light'
+const theme = ref<Theme>((localStorage.getItem('subssh-theme') as Theme) || 'dark')
+
+function applyTheme(t: Theme) {
+  document.documentElement.classList.toggle('light', t === 'light')
+}
+
 function toggleTheme() {
   theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  // TODO: 接入 document.documentElement.classList 与 localStorage
+  localStorage.setItem('subssh-theme', theme.value)
+  applyTheme(theme.value)
 }
+
+applyTheme(theme.value)
 
 function logout() {
   auth.clear()
@@ -27,7 +36,7 @@ function logout() {
   <header class="flex h-14 shrink-0 items-center justify-between border-b border-border bg-surface px-6">
     <h1 class="text-base font-semibold">{{ title }}</h1>
     <div class="flex items-center gap-2">
-      <button class="btn" :title="`切换主题（当前 ${theme}，占位）`" @click="toggleTheme">
+      <button class="btn" :title="`切换主题（当前${theme === 'dark' ? '深色' : '浅色'}）`" @click="toggleTheme">
         {{ theme === 'dark' ? '🌙' : '☀️' }}
       </button>
       <button class="btn" @click="logout">登出</button>

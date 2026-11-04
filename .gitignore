@@ -9,3 +9,5 @@ smoke-*.txt
 stdio-*.txt
 *.log
 data/
+!src/components/SubSsh.Plugin.WebApi/dist
+!src/components/SubSsh.Plugin.WebApi/dist/**

@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── 主题变量：默认深色；html.light 覆盖为浅色（TopBar 切换，localStorage 持久化）── */
+:root {
+  --c-bg: 11 14 20;        /* #0b0e14 */
+  --c-surface: 17 21 31;   /* #11151f */
+  --c-raised: 22 27 40;    /* #161b28 */
+  --c-border: 36 43 61;    /* #242b3d */
+  --c-text: 230 234 242;   /* #e6eaf2 */
+  --c-muted: 139 148 168;  /* #8b94a8 */
+  --c-accent: 79 156 249;  /* #4f9cf9 */
+  --c-ok: 52 211 153;      /* #34d399 */
+  --c-warn: 251 191 36;    /* #fbbf24 */
+  --c-danger: 248 113 113; /* #f87171 */
+  color-scheme: dark;
+}
+html.light {
+  --c-bg: 245 247 250;      /* #f5f7fa */
+  --c-surface: 255 255 255; /* #ffffff */
+  --c-raised: 240 243 248;  /* #f0f3f8 */
+  --c-border: 216 222 233;  /* #d8dee9 */
+  --c-text: 26 34 51;       /* #1a2233 */
+  --c-muted: 91 101 117;    /* #5b6575 */
+  --c-accent: 47 125 219;   /* #2f7ddb */
+  --c-ok: 16 185 129;       /* #10b981 */
+  --c-warn: 217 119 6;      /* #d97706 */
+  --c-danger: 220 38 38;    /* #dc2626 */
+  color-scheme: light;
+}
+
 @layer base {
   html,
   body,
