@@ -127,13 +127,30 @@ public sealed class KestrelWebServer : IWebApiServer
             var reply = await _services.Mcp.HandleAsync(call, ctx.RequestAborted);
             ctx.Response.StatusCode = reply.Body == null ? 202 : reply.StatusCode; // 通知 → 202 Accepted
             ctx.Response.ContentType = "application/json";
-            ctx.Response.Headers["MCP-Session-Id"] = "subssh-http"; // streamable-http 会话标识（无状态实现）
+            ctx.Response.Headers["MCP-Session-Id"] = "subssh-http";
+            ctx.Response.Headers["MCP-Protocol-Version"] = "2025-06-18"; // streamable-http 会话标识（无状态实现）
             foreach (var (k, v) in reply.Headers) ctx.Response.Headers[k] = v;
             if (reply.Body != null)
                 await ctx.Response.WriteAsync(reply.Body, ctx.RequestAborted);
         });
         app.MapGet("/.well-known/oauth-authorization-server", () => ApiRoutes.JsonOut(OAuth.AuthorizationServerMetadata()));
 
+        // GET /mcp：streamable-http 可选监听流。客户端握手后可能开此通道；
+        // 本实现无 server→client 请求，仅保持连接 + 心跳注释行。
+        app.MapGet("/mcp", async (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "text/event-stream";
+            ctx.Response.Headers["Cache-Control"] = "no-cache";
+            await ctx.Response.StartAsync(ctx.RequestAborted);
+            while (!ctx.RequestAborted.IsCancellationRequested)
+            {
+                await ctx.Response.WriteAsync(": keepalive\n\n", Encoding.UTF8, ctx.RequestAborted);
+                await ctx.Response.Body.FlushAsync(ctx.RequestAborted);
+                try { await Task.Delay(15000, ctx.RequestAborted); }
+                catch (OperationCanceledException) { break; }
+            }
+        });
         MapApiV1(app);
         MapEvents(app);
         MapTerminal(app);
