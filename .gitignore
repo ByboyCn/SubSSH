@@ -11,3 +11,6 @@ stdio-*.txt
 data/
 !src/components/SubSsh.Plugin.WebApi/dist
 !src/components/SubSsh.Plugin.WebApi/dist/**
+releasetest/
+local-out.txt
+local-err.txt
