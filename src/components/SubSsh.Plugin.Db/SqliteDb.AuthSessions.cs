@@ -77,8 +77,12 @@ public sealed partial class SqliteDb
     public Task<(ApiToken? Token, IReadOnlyList<HostConfig> Hosts)> FindTokenForResourceAsync(string hash, string resource, CancellationToken ct = default)
         => FindTokenInternalAsync(hash, resource, true);
 
-    private Task<(ApiToken? Token, IReadOnlyList<HostConfig> Hosts)> FindTokenInternalAsync(string hash, string resource, bool requireResource)
+    private Task<(ApiToken? Token, IReadOnlyList<HostConfig> Hosts)> FindTokenInternalAsync(string rawTokenOrHash, string resource, bool requireResource)
     {
+        // 对齐 Go：Bearer 层传入明文令牌，查询前先做 sha256 hex（兼容已是 hash 的输入原样通过）
+        var hash = rawTokenOrHash.Length == 64 && rawTokenOrHash.All(Uri.IsHexDigit)
+            ? rawTokenOrHash.ToLowerInvariant()
+            : TokenHash(rawTokenOrHash);
         lock (_sync)
         {
             var q = "SELECT " + TokenColumns + " FROM tokens WHERE token_hash=? AND (expires_at IS NULL OR expires_at>?)";
