@@ -97,6 +97,7 @@ public static class ApiRoutes
         }
         catch (Exception e)
         {
+            Console.Error.WriteLine("[parse] failed: " + e);
             return (false, null, ApiError(e, 400));
         }
     }
@@ -199,10 +200,10 @@ public static class ApiRoutes
     // ── 密钥（api.go keys/key/importPrivateKey）──
 
     private sealed record KeyInput(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("mode")] string Mode,
-        [property: JsonPropertyName("private_key")] string PrivateKey,
-        [property: JsonPropertyName("passphrase")] string Passphrase);
+        string Name,
+        string Mode,
+        string PrivateKey,
+        string Passphrase);
 
     public static async Task<IResult> KeysList(ApiServices a, CancellationToken ct) => JsonOut(await a.Store.ListKeysAsync(ct));
 
@@ -256,11 +257,11 @@ public static class ApiRoutes
     // ── 令牌（api.go tokens/token/normalizeTokenDisabledTools）──
 
     private sealed record TokenInput(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("all_hosts")] bool AllHosts,
-        [property: JsonPropertyName("manage_hosts")] bool ManageHosts,
-        [property: JsonPropertyName("host_ids")] long[] HostIds,
-        [property: JsonPropertyName("disabled_tools")] string[] DisabledTools);
+        string Name,
+        bool AllHosts,
+        bool ManageHosts,
+        long[] HostIds,
+        string[] DisabledTools);
 
     private static WebApiTokenView ToView(WebApiToken t, long[]? hostIds = null, string? plain = null) =>
         new() { Id = t.Id, Name = t.Name, AllHosts = t.AllHosts, ManageHosts = t.ManageHosts, DisabledTools = t.DisabledTools, Source = t.Source, CreatedAt = t.CreatedAt, HostIds = hostIds, Token = plain };
@@ -272,7 +273,7 @@ public static class ApiRoutes
     {
         error = null; normalized = [];
         try { normalized = ToolGroups.NormalizeList(names); return true; }
-        catch (Exception e) { error = ApiError(e, 400); return false; }
+        catch (Exception e) { Console.Error.WriteLine("[normalize] failed: " + e); error = ApiError(e, 400); return false; }
     }
 
     public static async Task<IResult> TokensList(ApiServices a, CancellationToken ct)
@@ -290,6 +291,7 @@ public static class ApiRoutes
 
     public static async Task<IResult> TokensCreate(ApiServices a, HttpContext ctx, CancellationToken ct)
     {
+        Console.Error.WriteLine("[tokens] enter");
         var (parseOk, input, parseErr) = await ParseBodyAsync<TokenInput>(ctx);
         if (!parseOk) return parseErr ?? Empty;
         if (!NormalizeTokenDisabledTools(input.DisabledTools, out var disabled, out var err)) return err!;
@@ -306,7 +308,7 @@ public static class ApiRoutes
             }, ct);
             return JsonOut(ToView(t, input.HostIds, plain), 201);
         }
-        catch (Exception e) { return ApiError(e, 409); }
+        catch (Exception e) { Console.Error.WriteLine("[tokens] create failed: " + e); return ApiError(e, 409); }
     }
 
     /// <summary>TODO(port)：对齐 store.TokenHash 的具体哈希算法（sha256 hex，待 Plugin.Db 确认后照搬）。</summary>

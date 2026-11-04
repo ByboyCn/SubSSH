@@ -44,13 +44,13 @@ public sealed partial class SqliteDb
     {
         var source = input.Source.Length == 0 ? "manual" : input.Source;
         object? expiresAt = input.ExpiresAt > 0 ? input.ExpiresAt : null;
-        var (disabledJson, disabledTools) = EncodeDisabledTools(input.DisabledTools);
+        var (disabledJson, disabledTools) = EncodeDisabledTools(input.DisabledTools ?? []);
         Exec(tx, @"INSERT INTO tokens(name,token_hash,all_hosts,manage_hosts,disabled_tools_json,created_at,source,expires_at,resource,client_id)
             VALUES(?,?,?,?,?,?,?,?,?,?)",
             input.Name, input.Hash, input.AllHosts ? 1 : 0, input.ManageHosts ? 1 : 0, disabledJson,
             now, source, expiresAt, NullableString(input.Resource), NullableString(input.ClientId));
         var id = ScalarLong("SELECT last_insert_rowid()", tx);
-        foreach (var hostId in input.HostIds)
+        foreach (var hostId in input.HostIds ?? [])
         {
             Exec(tx, "INSERT INTO token_hosts(token_id,host_id) VALUES(?,?)", id, hostId);
         }
@@ -142,7 +142,7 @@ public sealed partial class SqliteDb
         lock (_sync)
         {
             using var tx = _conn.BeginTransaction();
-            var (disabledJson, _) = EncodeDisabledTools(input.DisabledTools);
+            var (disabledJson, _) = EncodeDisabledTools(input.DisabledTools ?? []);
             using (var cmd = tx.Connection!.CreateCommand())
             {
                 cmd.Transaction = tx;
@@ -154,7 +154,7 @@ public sealed partial class SqliteDb
                 }
             }
             Exec(tx, "DELETE FROM token_hosts WHERE token_id=?", id);
-            foreach (var hostId in input.HostIds)
+            foreach (var hostId in input.HostIds ?? [])
             {
                 Exec(tx, "INSERT INTO token_hosts(token_id,host_id) VALUES(?,?)", id, hostId);
             }
