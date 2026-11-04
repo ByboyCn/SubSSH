@@ -31,7 +31,7 @@ public sealed class JobManagerService : IJobManager
 
     private readonly IConnectionPool _pool;
     private readonly ICommandRunner _exec;
-    private IOneSshStoreFull _store = null!; // 由 JobsPlugin 经 AttachStore 注入（IOneSshStoreFull Require 晚于构造）。
+    private ISubSshStoreFull _store = null!; // 由 JobsPlugin 经 AttachStore 注入（ISubSshStoreFull Require 晚于构造）。
 
     /// <summary>任务事件总线（job_status / command_job_linked / command_finished）。</summary>
     public EventBus Events { get; } = new();
@@ -51,11 +51,11 @@ public sealed class JobManagerService : IJobManager
     {
         _pool = pool;
         _exec = exec;
-        _store = null!; // 由 JobsPlugin 经 AttachStore 注入（IOneSshStoreFull Require 晚于构造）。
+        _store = null!; // 由 JobsPlugin 经 AttachStore 注入（ISubSshStoreFull Require 晚于构造）。
     }
 
     /// <summary>由插件入口注入存储（对应 Go Manager.Store 字段）。</summary>
-    public void AttachStore(IOneSshStoreFull store) => _store = store;
+    public void AttachStore(ISubSshStoreFull store) => _store = store;
 
     private static string TimeoutReason() => "8s 内未能从主机确认状态";
 
@@ -83,10 +83,10 @@ public sealed class JobManagerService : IJobManager
             cwdShell = "\"$HOME\"";
         }
         var inner = TrackedJobCommand(command);
-        var script = "d=\"$HOME/.onessh/jobs/" + id + "\"; export d; ONESSH_JOB_MARKER=" + Shq("onessh-job-" + id)
-            + "; export ONESSH_JOB_MARKER; mkdir -p \"$d\"; cd " + cwdShell + " || exit 97; "
+        var script = "d=\"$HOME/.subssh/jobs/" + id + "\"; export d; SUBSSH_JOB_MARKER=" + Shq("subssh-job-" + id)
+            + "; export SUBSSH_JOB_MARKER; mkdir -p \"$d\"; cd " + cwdShell + " || exit 97; "
             + "if command -v setsid >/dev/null 2>&1; then S=setsid; else S=; fi; $S nohup sh -c "
-            + Shq(inner) + " " + Shq("onessh-job-" + id)
+            + Shq(inner) + " " + Shq("subssh-job-" + id)
             + " >\"$d/out.log\" 2>&1 </dev/null & echo \"$!:$S\"";
         var client = await _pool.GetAsync(host.Name, ct).ConfigureAwait(false);
         ExecResult res;
@@ -193,7 +193,7 @@ public sealed class JobManagerService : IJobManager
             target = "-" + pid;
             group = "1";
         }
-        var marker = "onessh-job-" + j.Id;
+        var marker = "subssh-job-" + j.Id;
         return "pid=" + Shq(pid) + "; target=" + Shq(target) + "; marker=" + Shq(marker) + "; group=" + group + ";\n" +
             "owned() {\n" +
             "  args=$(ps -p \"$pid\" -o args= 2>/dev/null) || args=\n" +
@@ -208,7 +208,7 @@ public sealed class JobManagerService : IJobManager
             "    stat=${stat##*) }\n" +
             "    set -- $stat\n" +
             "    [ \"$3\" = \"$pid\" ] || continue\n" +
-            "    if tr '\\0' '\\n' < \"$proc/environ\" 2>/dev/null | grep -Fqx \"ONESSH_JOB_MARKER=$marker\"; then return 0; fi\n" +
+            "    if tr '\\0' '\\n' < \"$proc/environ\" 2>/dev/null | grep -Fqx \"SUBSSH_JOB_MARKER=$marker\"; then return 0; fi\n" +
             "  done\n" +
             "  return 1\n" +
             "}\n" +
@@ -406,7 +406,7 @@ public sealed class JobManagerService : IJobManager
     /// <summary>登录主机读取一个运行中任务的真实状态，并把变化写回数据库（Go probe）。</summary>
     private async Task<JobStatus> ProbeAsync(IRemoteConnection client, JobRecord j, CancellationToken ct)
     {
-        var script = "d=\"$HOME/.onessh/jobs/" + j.Id + "\"; " + JobProcessIdentityScript(j) + "\n" +
+        var script = "d=\"$HOME/.subssh/jobs/" + j.Id + "\"; " + JobProcessIdentityScript(j) + "\n" +
             "if [ -f \"$d/exit\" ]; then printf 'exited:'; tr -d '\\n' < \"$d/exit\"; printf ':'; wc -c < \"$d/out.log\";\n" +
             "elif alive && owned; then printf 'running::'; wc -c < \"$d/out.log\";\n" +
             "else printf 'lost::'; wc -c 2>/dev/null < \"$d/out.log\" || echo 0; fi";
@@ -471,7 +471,7 @@ public sealed class JobManagerService : IJobManager
         var client = await _pool.GetAsync(h.Name, ct).ConfigureAwait(false);
         if (tailLines <= 0) tailLines = 100;
         if (tailLines > 5000) tailLines = 5000;
-        var prefix = "d=\"$HOME/.onessh/jobs/" + job.Id + "\"; ";
+        var prefix = "d=\"$HOME/.subssh/jobs/" + job.Id + "\"; ";
         string cmd;
         if (offset > 0)
         {
@@ -504,7 +504,7 @@ public sealed class JobManagerService : IJobManager
         if (limit > 128 << 10) limit = 128 << 10;
         var start = offset + 1;
         var readLimit = limit + 3;
-        var command = "d=\"$HOME/.onessh/jobs/" + job.Id + "\"; f=\"$d/out.log\"; test -f \"$f\" || exit 44; "
+        var command = "d=\"$HOME/.subssh/jobs/" + job.Id + "\"; f=\"$d/out.log\"; test -f \"$f\" || exit 44; "
             + "size=$(wc -c < \"$f\") || exit; printf '%s\\n' \"$size\"; "
             + "if [ \"$size\" -gt " + offset.ToString(CultureInfo.InvariantCulture) + " ]; then "
             + "count=$((size-" + offset.ToString(CultureInfo.InvariantCulture) + ")); "
@@ -563,7 +563,7 @@ public sealed class JobManagerService : IJobManager
         var client = await _pool.GetAsync(h.Name, ct).ConfigureAwait(false);
         // 发信号前再次在远端核验 job 身份；setsid leader 消失时，仍可通过组员继承的环境标记
         // 验证 PGID。信号成功后等待整个目标退出，再读取最终日志大小。
-        var script = "d=\"$HOME/.onessh/jobs/" + job.Id + "\"; " + JobProcessIdentityScript(job) + "\n" +
+        var script = "d=\"$HOME/.subssh/jobs/" + job.Id + "\"; " + JobProcessIdentityScript(job) + "\n" +
             "bytes() { wc -c 2>/dev/null < \"$d/out.log\" || printf '0\\n'; }\n" +
             "exited() { printf 'exited:'; tr -d '\\n' < \"$d/exit\"; printf ':'; bytes; }\n" +
             "signal_target() { kill -" + signal + " \"$target\" 2>/dev/null; }\n" +

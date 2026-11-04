@@ -1,7 +1,7 @@
 // SubSsh.Core.Abstractions — Store 公共组件接口扩展 + 数据模型（字段对齐 Go 版 internal/store/models.go）。
-// 说明：ServiceAbstractions.cs 中的 IOneSshStore 是骨架子集（HealthAsync/ConnectionString）。
-// 为避免改动 ServiceAbstractions.cs（可能与并行任务冲突），此处定义完整方法集接口 IOneSshStoreFull : IOneSshStore；
-// 消费方 Require<IOneSshStoreFull>() 即可拿到全量存储能力（同一实例，Db 插件同时 Provide 两个接口）。
+// 说明：ServiceAbstractions.cs 中的 ISubSshStore 是骨架子集（HealthAsync/ConnectionString）。
+// 为避免改动 ServiceAbstractions.cs（可能与并行任务冲突），此处定义完整方法集接口 ISubSshStoreFull : ISubSshStore；
+// 消费方 Require<ISubSshStoreFull>() 即可拿到全量存储能力（同一实例，Db 插件同时 Provide 两个接口）。
 namespace SubSsh.Core.Abstractions;
 
 // ---------- 数据模型（命名空间仍为 Core.Abstractions；字段/JSON 名对齐 store/models.go） ----------
@@ -323,7 +323,7 @@ public sealed class OAuthRefreshTokenRecord
 /// 失败语义对齐 Go 版：查询无行返回 null；业务约束（如密钥被引用、主机被用作跳板、OAuth 令牌重用）
 /// 抛 SubSshException，文案与 Go 版一致。
 /// </summary>
-public interface IOneSshStoreFull : IOneSshStore
+public interface ISubSshStoreFull : ISubSshStore
 {
     // ---- 维护（store.go）----
     /// <summary>WAL checkpoint（TRUNCATE）。busy=true 表示被其他连接阻塞。</summary>
@@ -445,7 +445,7 @@ public interface IOneSshStoreFull : IOneSshStore
 }
 
 /// <summary>单个筛选维度上限（对齐 Go store.MaxAuditFilterValues）。</summary>
-public static class OneSshStoreLimits
+public static class SubSshStoreLimits
 {
     public const int MaxAuditFilterValues = 100;
 }

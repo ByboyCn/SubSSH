@@ -1,6 +1,6 @@
 # SubSsh — 可插拔、可任意替换的 SSH 网关（插件架构）
 
-基于 [OneSSH](https://github.com/Lynricsy/OneSSH)（Go + React，GPL-3.0）的 C# 移植，
+基于 [SubSSH](https://github.com/Lynricsy/SubSSH)（Go + React，GPL-3.0）的 C# 移植，
 架构范式遵循论文 [A Programming Paradigm for Spatiotemporal Composability](https://arxiv.org/abs/2608.25512)
 （参考实现 https://github.com/ByboyCn/ImBot ）。
 

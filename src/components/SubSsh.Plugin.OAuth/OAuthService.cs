@@ -1,4 +1,4 @@
-// OAuth 服务全量实现（移植 OneSSH internal/oauthserver/server.go + handlers.go）。
+// OAuth 服务全量实现（移植 SubSSH internal/oauthserver/server.go + handlers.go）。
 // 端点：/.well-known/oauth-authorization-server、/.well-known/oauth-protected-resource/mcp、
 // /oauth/register、/oauth/authorize（信息 + 决策）、/oauth/token（PKCE S256 + refresh_token）。
 using System.Buffers.Text;
@@ -40,7 +40,7 @@ public sealed class OAuthService : IOAuthServer
                 || u.Host.Length == 0 || u.UserInfo.Length != 0
                 || u.Query.Length != 0 || u.Fragment.Length != 0
                 || (u.AbsolutePath.Length != 0 && u.AbsolutePath != "/"))
-                throw new InvalidOperationException("ONESSH_PUBLIC_URL 必须是无路径、查询和片段的 http(s) 来源地址");
+                throw new InvalidOperationException("SUBSSH_PUBLIC_URL 必须是无路径、查询和片段的 http(s) 来源地址");
             _publicUrl = NormalizeOrigin(u);
         }
         else
@@ -102,7 +102,7 @@ public sealed class OAuthService : IOAuthServer
             ["authorization_servers"] = new[] { BaseUrl(request) },
             ["scopes_supported"] = new[] { SupportedScope },
             ["bearer_methods_supported"] = new[] { "header" },
-            ["resource_name"] = "OneSSH MCP",
+            ["resource_name"] = "SubSSH MCP",
         });
     }
 
@@ -236,9 +236,9 @@ public sealed class OAuthService : IOAuthServer
         var (resource, _) = ResourceUrls(request);
         string requestedResource;
         try { requestedResource = NormalizeResource(First(values, "resource") ?? ""); }
-        catch (OAuthRequestError) { throw new OAuthRequestError("invalid_target", "resource 必须指向当前 OneSSH MCP 端点"); }
+        catch (OAuthRequestError) { throw new OAuthRequestError("invalid_target", "resource 必须指向当前 SubSSH MCP 端点"); }
         if (requestedResource != resource)
-            throw new OAuthRequestError("invalid_target", "resource 必须指向当前 OneSSH MCP 端点");
+            throw new OAuthRequestError("invalid_target", "resource 必须指向当前 SubSSH MCP 端点");
         var scopes = ParseScopes(First(values, "scope") ?? "");
         return new AuthorizationRequest(client, redirectUri, resource, string.Join(" ", scopes),
             scopes, First(values, "state") ?? "", challenge);

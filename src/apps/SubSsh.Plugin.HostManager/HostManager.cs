@@ -1,4 +1,4 @@
-// SubSsh.Plugin.HostManager — 主机管理组件（1:1 移植自 OneSSH internal/hostmanager/manager.go）。
+// SubSsh.Plugin.HostManager — 主机管理组件（1:1 移植自 SubSSH internal/hostmanager/manager.go）。
 // GPL-3.0，对应 Go hostmanager.Manager：Create/Update/Delete/Test/ResetFingerprint/Archive/Unarchive、
 // Input 校验、标签归一化（32 字符/16 个）、跳板链 5 级且不能成环、错误分类（invalid/not_found/conflict/connection/internal）。
 using System.Text;
@@ -20,11 +20,11 @@ public sealed class HostManager : IHostManager
     private const int MaxTagLength = 32;
     private const int MaxTagsCount = 16;
 
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private ICryptoBox? _box;
     private IConnectionPool? _pool;
 
-    public void SetStore(IOneSshStoreFull store) => _store = store;
+    public void SetStore(ISubSshStoreFull store) => _store = store;
     public void SetCrypto(ICryptoBox box) => _box = box;
     public void SetPool(IConnectionPool? pool) => _pool = pool;
 
@@ -363,8 +363,8 @@ public sealed class HostManager : IHostManager
         return new HostManagerException(ex.Message, HostManagerErrorKind.Internal);
     }
 
-    private IOneSshStoreFull RequireStore()
-        => _store ?? throw new SubSshException("主机管理不可用：数据库组件未就绪（需要 IOneSshStoreFull）");
+    private ISubSshStoreFull RequireStore()
+        => _store ?? throw new SubSshException("主机管理不可用：数据库组件未就绪（需要 ISubSshStoreFull）");
 
     private ICryptoBox RequireCrypto()
         => _box ?? throw new SubSshException("主机管理不可用：密码箱组件未就绪（需要 ICryptoBox）");

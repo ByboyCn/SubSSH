@@ -1,6 +1,6 @@
-// SubSsh.Plugin.Tools.Exec — exec 工具组插件（对应 OneSSH internal/mcpserver/exec.go）。
+// SubSsh.Plugin.Tools.Exec — exec 工具组插件（对应 SubSSH internal/mcpserver/exec.go）。
 // GPL-3.0。Require: IMcpServer + IToolRegistry（工具经 Track 注册，卸载随 McpCore 级联反注册）
-// + ICommandRunner + IConnectionPool + IOneSshStoreFull（必需）；IDenylist（可选）+ IToolGroups（可选）。
+// + ICommandRunner + IConnectionPool + ISubSshStoreFull（必需）；IDenylist（可选）+ IToolGroups（可选）。
 // exec_many（fanout）已由 Plugin.McpCore 内置注册（McpServerCore.RegisterBuiltinTools），此处不重复注册。
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -22,7 +22,7 @@ public sealed class ToolsExecPlugin : IComponent
     private IToolRegistry? _registry;
     private ICommandRunner? _runner;
     private IConnectionPool? _pool;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IDenylist? _denylist;
     private bool _registered;
     private readonly object _gate = new();
@@ -47,7 +47,7 @@ public sealed class ToolsExecPlugin : IComponent
         ctx.Require<IToolRegistry>(r => { _registry = r; Publish(); }, () => { _registry = null; });
         ctx.Require<ICommandRunner>(r => { _runner = r; Publish(); }, () => { _runner = null; });
         ctx.Require<IConnectionPool>(r => { _pool = r; Publish(); }, () => { _pool = null; });
-        ctx.Require<IOneSshStoreFull>(r => { _store = r; Publish(); }, () => { _store = null; });
+        ctx.Require<ISubSshStoreFull>(r => { _store = r; Publish(); }, () => { _store = null; });
         // 可选依赖：IDenylist 在线时做第二道拦截 + denied 审计；IToolGroups 暂不直接使用（禁用组由 McpCore 统一过滤）
         ctx.Require<IDenylist>(d => _denylist = d, () => _denylist = null);
         ctx.Require<IToolGroups>(_ => { }, () => { });
@@ -197,7 +197,7 @@ public sealed class ToolsExecPlugin : IComponent
         }
     }
 
-    private static async Task SaveSessionQuietly(IOneSshStoreFull store, SessionRecord state)
+    private static async Task SaveSessionQuietly(ISubSshStoreFull store, SessionRecord state)
     {
         try { await store.SaveSessionAsync(state).ConfigureAwait(false); }
         catch { /* 对应 Go _ = s.Store.SaveSession(...) */ }
@@ -284,7 +284,7 @@ public sealed class ToolsExecPlugin : IComponent
     // 审计与脱敏由 McpCore 的 tools/call 包装统一完成，这里只落 store）
     // ------------------------------------------------------------------
     private static async Task<CommandRun> StartCommandRunAsync(
-        IOneSshStoreFull store, McpCallContext context, string tool, HostConfig host,
+        ISubSshStoreFull store, McpCallContext context, string tool, HostConfig host,
         string command, string cwd, string session, CancellationToken ct)
     {
         var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -308,7 +308,7 @@ public sealed class ToolsExecPlugin : IComponent
     }
 
     private static async Task FinishCommandRunAsync(
-        IOneSshStoreFull store, CommandRun run, ExecResult result, Exception? runErr, CancellationToken requestCt)
+        ISubSshStoreFull store, CommandRun run, ExecResult result, Exception? runErr, CancellationToken requestCt)
     {
         // 状态机（对应 Go commandRunStatus，McpCore.CommandRuns.RunStatus 同形）
         string status;
@@ -367,7 +367,7 @@ public sealed class ToolsExecPlugin : IComponent
     }
 
     internal static async Task<HostConfig> AuthorizedHostAsync(
-        IOneSshStoreFull store, McpCallContext context, string name, CancellationToken ct)
+        ISubSshStoreFull store, McpCallContext context, string name, CancellationToken ct)
     {
         _ = context;
         // TODO：令牌级主机集合授权（McpPrincipal 在传输层构造，PrincipalFrom 当前恒 null，见 McpCore）

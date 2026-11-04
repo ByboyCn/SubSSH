@@ -1,5 +1,5 @@
 // SubSsh.Plugin.SshPool — 公共 SSH 池组件插件（可插拔、可任意替换：换同接口插件即可替换连接实现）。
-// GPL-3.0，移植自 OneSSH internal/sshpool/pool.go（连接复用、TOFU 指纹固定、跳板链最多 5 级且不能成环）。
+// GPL-3.0，移植自 SubSSH internal/sshpool/pool.go（连接复用、TOFU 指纹固定、跳板链最多 5 级且不能成环）。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
 
@@ -12,7 +12,7 @@ public sealed class SshPoolPlugin : IComponent
 
     public Task StartAsync(IContext ctx, CancellationToken ct = default)
     {
-        IOneSshStoreFull? store = null;
+        ISubSshStoreFull? store = null;
         ICryptoBox? box = null;
         SshPool? pool = null;
 
@@ -36,7 +36,7 @@ public sealed class SshPoolPlugin : IComponent
             pool = null;
         }
 
-        ctx.Require<IOneSshStoreFull>(
+        ctx.Require<ISubSshStoreFull>(
             s => { store = s; Activate(); },
             () => { store = null; Deactivate(); });
         ctx.Require<ICryptoBox>(

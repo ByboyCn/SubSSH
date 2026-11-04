@@ -1,6 +1,6 @@
 // SubSsh.Plugin.McpCore — 公共 MCP 组件插件（可插拔、可任意替换）。
-// GPL-3.0，移植自 OneSSH internal/mcpserver/server.go（手写 JSON-RPC 2.0，不用 SDK）。
-// 时空可组合：ISettings + IOneSshStoreFull + IToolGroups 三个依赖全部在线时构建并发布
+// GPL-3.0，移植自 SubSSH internal/mcpserver/server.go（手写 JSON-RPC 2.0，不用 SDK）。
+// 时空可组合：ISettings + ISubSshStoreFull + IToolGroups 三个依赖全部在线时构建并发布
 // IMcpServer / IToolRegistry / McpHttpMount；任一下线即静默撤回，等待依赖回归。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
@@ -13,7 +13,7 @@ public sealed class McpCorePlugin : IComponent
     public string Name => "mcp-core";
 
     private ISettings? _settings;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IToolGroups? _groups;
     private IConnectionPool? _pool;
     private ICommandRunner? _runner;
@@ -28,7 +28,7 @@ public sealed class McpCorePlugin : IComponent
 
         ctx.Require<ISettings>(s => { _settings = s; TryBuild(ctx); },
             () => { _settings = null; TryUnbuild(ctx); });
-        ctx.Require<IOneSshStoreFull>(s => { _store = s; TryBuild(ctx); },
+        ctx.Require<ISubSshStoreFull>(s => { _store = s; TryBuild(ctx); },
             () => { _store = null; TryUnbuild(ctx); });
         ctx.Require<IToolGroups>(s => { _groups = s; TryBuild(ctx); },
             () => { _groups = null; TryUnbuild(ctx); });

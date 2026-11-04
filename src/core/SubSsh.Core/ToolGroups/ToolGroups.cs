@@ -1,7 +1,7 @@
 namespace SubSsh.Core.ToolGroups;
 
-// 工具组常量与 OneSSH internal/toolgroups/toolgroups.go 完全一致：
-// 分组名是 ONESSH_DISABLED_TOOLS 与令牌级 denylist 的唯一取值来源，
+// 工具组常量与 SubSSH internal/toolgroups/toolgroups.go 完全一致：
+// 分组名是 SUBSSH_DISABLED_TOOLS 与令牌级 denylist 的唯一取值来源，
 // 工具名表决定「注册哪些工具」和「服务器提示词里能提到哪些工具」。
 
 /// <summary>分组名常量（对应 Go toolgroups.Group 常量）。</summary>

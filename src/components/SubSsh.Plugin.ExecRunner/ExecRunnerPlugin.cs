@@ -1,8 +1,8 @@
 // SubSsh.Plugin.ExecRunner — 公共命令执行组件插件（可插拔、可任意替换）。
-// 全量移植 OneSSH internal/execx/runner.go：超时/截断（head+tail）/退出码+cwd trailer/
+// 全量移植 SubSSH internal/execx/runner.go：超时/截断（head+tail）/退出码+cwd trailer/
 // artifact 与 command output 落盘、ReadCommandOutput 字节游标分页、ReadArtifact 行分页+grep、
-// SHQ/Script 包装脚本；session cwd/env 持久化经 IOneSshStoreFull。
-// 依赖：Require ISettings（DataDir）、IConnectionPool（上线门控）、IOneSshStoreFull（session 存取）。
+// SHQ/Script 包装脚本；session cwd/env 持久化经 ISubSshStoreFull。
+// 依赖：Require ISettings（DataDir）、IConnectionPool（上线门控）、ISubSshStoreFull（session 存取）。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
 
@@ -23,7 +23,7 @@ public sealed class ExecRunnerPlugin : IComponent
                 ctx.Require<IConnectionPool>(
                     _ =>
                     {
-                        ctx.Require<IOneSshStoreFull>(
+                        ctx.Require<ISubSshStoreFull>(
                             st =>
                             {
                                 if (svc != null)
@@ -59,7 +59,7 @@ public sealed class ExecRunnerPlugin : IComponent
 
 /// <summary>
 /// exec session（cwd/env）持久化能力（对应 Go mcpserver exec 工具的 session 存取面，
-/// 底层走 IOneSshStoreFull.GetSessionAsync/SaveSessionAsync）。与 ICommandRunner 同实例提供。
+/// 底层走 ISubSshStoreFull.GetSessionAsync/SaveSessionAsync）。与 ICommandRunner 同实例提供。
 /// </summary>
 public interface IExecSessionPersistence
 {

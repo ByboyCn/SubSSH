@@ -1,6 +1,6 @@
 // SubSsh.Plugin.HostManager — 插件装配（组合根入口）。
 // Provide: IHostManager（对应 Go hostmanager.New(store, box, pool)）。
-// Require: IOneSshStoreFull + ICryptoBox（必需，缺任一则不发布）；IConnectionPool（可选，仅 Test 需要）。
+// Require: ISubSshStoreFull + ICryptoBox（必需，缺任一则不发布）；IConnectionPool（可选，仅 Test 需要）。
 // 空间可组合：任一必需提供者下线即静默撤回发布，回来自动恢复；本插件不对外提供 WebApi 适配
 //（IWebApiHostManager 由 Plugin.WebApi 自行适配，见 WebApiAbstractions.cs）。
 using SubSsh.Core.Abstractions;
@@ -16,7 +16,7 @@ public sealed class HostManagerPlugin : IComponent
     public Task StartAsync(IContext ctx, CancellationToken ct = default)
     {
         var manager = new HostManager();
-        IOneSshStoreFull? store = null;
+        ISubSshStoreFull? store = null;
         ICryptoBox? box = null;
 
         // 必需依赖齐备才发布；任一下线即撤回（依赖者静默等待）
@@ -34,7 +34,7 @@ public sealed class HostManagerPlugin : IComponent
             }
         }
 
-        ctx.Require<IOneSshStoreFull>(
+        ctx.Require<ISubSshStoreFull>(
             s => { store = s; Publish(); },
             () => { store = null; ctx.Unprovide<IHostManager>(); });
 

@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Crypto — AES-256-GCM 密码箱（cryptox.go 等价，密文格式与原版兼容）。
-// GPL-3.0，移植自 OneSSH internal/cryptox/cryptox.go。
+// GPL-3.0，移植自 SubSSH internal/cryptox/cryptox.go。
 using System.Security.Cryptography;
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;

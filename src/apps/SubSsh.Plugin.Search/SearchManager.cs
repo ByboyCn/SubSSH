@@ -19,9 +19,9 @@ public sealed class SearchManager : ISearchEngine
     private const int MaxStderr = 64 << 10;
 
     private const string GrepHelperWarning =
-        "远端缺少 rg，已上传临时 OneSSH 搜索 helper 在远端本地遍历（Go 正则语义，运行结束后已自动删除）";
+        "远端缺少 rg，已上传临时 SubSSH 搜索 helper 在远端本地遍历（Go 正则语义，运行结束后已自动删除）";
     private const string FindHelperWarning =
-        "远端缺少 fd/fdfind，已上传临时 OneSSH 搜索 helper 在远端本地遍历（运行结束后已自动删除）";
+        "远端缺少 fd/fdfind，已上传临时 SubSSH 搜索 helper 在远端本地遍历（运行结束后已自动删除）";
     private const string GrepFallbackWarning =
         "远端缺少 rg，已使用 SFTP 降级搜索；大型目录上的性能可能低于原生 rg";
     private const string FindFallbackWarning =
@@ -122,7 +122,7 @@ public sealed class SearchManager : ISearchEngine
         args.Add("--");
         args.Add(pattern);
         args.Add(opt.Path);
-        var command = "if command -v fd >/dev/null 2>&1; then _onessh_fd=fd; elif command -v fdfind >/dev/null 2>&1; then _onessh_fd=fdfind; else printf '%s\\n' 'fd 未安装' >&2; exit 127; fi; exec \"$_onessh_fd\" " + ShellArgs(args);
+        var command = "if command -v fd >/dev/null 2>&1; then _subssh_fd=fd; elif command -v fdfind >/dev/null 2>&1; then _subssh_fd=fdfind; else printf '%s\\n' 'fd 未安装' >&2; exit 127; fi; exec \"$_subssh_fd\" " + ShellArgs(args);
 
         var out_ = new FindResult { Paths = new List<string>(Math.Min(opt.Limit, 256)), Engine = "fd" };
         var acc = new StreamAccumulator { OutputBytes = Encoding.UTF8.GetByteCount(out_.Engine) + 64 };

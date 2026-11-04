@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Tools.Memory — 记忆工具包插件（对应 Go mcpserver/memory.go 全部工具）。
-// Require: IMcpServer + IToolRegistry（注册工具）+ IMemoryEngine + IOneSshStoreFull + IToolGroups（必需）；
+// Require: IMcpServer + IToolRegistry（注册工具）+ IMemoryEngine + ISubSshStoreFull + IToolGroups（必需）；
 //          IDenylist（可选，令牌级兜底拦截）。
 // bank 语义照抄 Go memoryBank：host 参数为空 → 全局 bank；否则按名授权解析到主机 bank。
 // 空间可组合：必需提供者齐备才注册工具，任一下线即撤回本插件引用并静默等待；
@@ -19,7 +19,7 @@ public sealed class ToolsMemoryPlugin : IComponent
     private IContext? _ctx;
     private IToolRegistry? _registry;
     private IMemoryEngine? _engine;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IToolGroups? _groups;
     private IDenylist? _denylist;
 
@@ -43,7 +43,7 @@ public sealed class ToolsMemoryPlugin : IComponent
         ctx.Require<IMcpServer>(_ => Publish(), DropRegistry);
         ctx.Require<IToolRegistry>(r => { _registry = r; Publish(); }, DropRegistry);
         ctx.Require<IMemoryEngine>(e => { _engine = e; Publish(); }, DropEngine);
-        ctx.Require<IOneSshStoreFull>(s => { _store = s; Publish(); }, DropStore);
+        ctx.Require<ISubSshStoreFull>(s => { _store = s; Publish(); }, DropStore);
         ctx.Require<IToolGroups>(g => { _groups = g; Publish(); }, DropGroups);
 
         // 可选依赖：令牌级 denylist 兜底

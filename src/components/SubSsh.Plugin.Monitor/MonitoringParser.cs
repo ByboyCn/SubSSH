@@ -1,7 +1,7 @@
 // SubSsh.Plugin.Monitor — 采样输出解析：monitor.go parse / parseCPU / parseLoad 的逐行移植。
 // 差分 CPU：100 * (1 - idleDelta/totalDelta)；内存：MemTotal - MemAvailable；
 // 负载：/proc/loadavg 首字段（行含 "/"）或 uptime "load averages?: N" 正则；
-// 磁盘：__ONESSH_DF__ 之后的 df -P -k 行（fields[1]=total、fields[2]=used、fields[5:]=mount）。
+// 磁盘：__SUBSSH_DF__ 之后的 df -P -k 行（fields[1]=total、fields[2]=used、fields[5:]=mount）。
 using System.Text.RegularExpressions;
 using SubSsh.Core.Abstractions;
 
@@ -13,7 +13,7 @@ internal static partial class MonitoringParser
     [GeneratedRegex(@"load averages?:?\s*([0-9]+(?:\.[0-9]+)?)")]
     private static partial Regex UptimeLoad();
 
-    private const string DfMarker = "__ONESSH_DF__";
+    private const string DfMarker = "__SUBSSH_DF__";
 
     /// <summary>解析一次采样输出。返回快照；newTotal>0 时调用方保存差分基线（对应 Go parse 返回的 cpu.Total）。</summary>
     public static MonitorSnapshot Parse(
@@ -48,7 +48,7 @@ internal static partial class MonitoringParser
 
         snap = snap with { Load1 = ParseLoad(text) };
 
-        // df 解析（Go: marker := strings.Index(text, __ONESSH_DF__); 缺标记报错）
+        // df 解析（Go: marker := strings.Index(text, __SUBSSH_DF__); 缺标记报错）
         var marker = text.IndexOf(DfMarker, StringComparison.Ordinal);
         if (marker < 0)
             throw new SubSsh.Core.Abstractions.SubSshException("采样输出缺少 df 标记");

@@ -21,7 +21,7 @@ public sealed class McpUnauthorizedException(string challenge) : Exception("unau
     public string Challenge { get; } = challenge;
 }
 
-public sealed class BearerAuthenticator(IOneSshStoreFull store)
+public sealed class BearerAuthenticator(ISubSshStoreFull store)
 {
     /// <summary>
     /// 校验 Authorization 头并解析授权主机集合（对应 Go Bearer 中间件）。
@@ -50,7 +50,7 @@ public sealed class BearerAuthenticator(IOneSshStoreFull store)
     /// 主机访问授权（对应 Go AuthorizedHost）：
     /// 在令牌主机集合内直接放行；否则查库区分 unknown host / host archived / host not authorized。
     /// </summary>
-    public static async Task<HostConfig> AuthorizedHostAsync(McpPrincipal? principal, IOneSshStoreFull store, string name)
+    public static async Task<HostConfig> AuthorizedHostAsync(McpPrincipal? principal, ISubSshStoreFull store, string name)
     {
         if (principal == null) throw new SubSshException("unauthorized");
         if (principal.Hosts.TryGetValue(name, out var h)) return h;

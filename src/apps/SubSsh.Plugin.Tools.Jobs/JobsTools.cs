@@ -1,5 +1,5 @@
 // 后台任务工具实现（对应 Go mcpserver/jobs.go 的 handler 面）。
-// job_start 附带 command_runs 审计记录（startCommandRun/finishCommandRun 等价，经 IOneSshStoreFull）；
+// job_start 附带 command_runs 审计记录（startCommandRun/finishCommandRun 等价，经 ISubSshStoreFull）；
 // 授权：任务按 job_id 归属令牌，且要求令牌此刻仍能访问所在主机（对应 Go ownedJob，文案照抄）。
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -58,7 +58,7 @@ internal static class Args
 /// <summary>访问控制（对应 Go mcpserver/auth.go；文案照抄）。</summary>
 internal static class Access
 {
-    public static async Task<ApiToken> TokenAsync(IOneSshStoreFull store, McpCallContext ctx, CancellationToken ct)
+    public static async Task<ApiToken> TokenAsync(ISubSshStoreFull store, McpCallContext ctx, CancellationToken ct)
     {
         var token = ctx.TokenId > 0 ? await store.GetTokenAsync(ctx.TokenId, ct).ConfigureAwait(false) : null;
         if (token == null) throw new SubSshException("unauthorized");
@@ -66,7 +66,7 @@ internal static class Access
     }
 
     /// <summary>主机访问授权（对应 Go AuthorizedHost）。</summary>
-    public static async Task<HostConfig> AuthorizedHostAsync(IOneSshStoreFull store, McpCallContext ctx, string name, CancellationToken ct)
+    public static async Task<HostConfig> AuthorizedHostAsync(ISubSshStoreFull store, McpCallContext ctx, string name, CancellationToken ct)
     {
         var token = await TokenAsync(store, ctx, ct).ConfigureAwait(false);
         var host = await store.GetHostByNameAsync(name, ct).ConfigureAwait(false);
@@ -78,7 +78,7 @@ internal static class Access
         return host;
     }
 
-    public static async Task<bool> CanAccessHostAsync(IOneSshStoreFull store, ApiToken token, long hostId, CancellationToken ct)
+    public static async Task<bool> CanAccessHostAsync(ISubSshStoreFull store, ApiToken token, long hostId, CancellationToken ct)
     {
         if (token.AllHosts) return true;
         var ids = await store.TokenHostIdsAsync(token.Id, ct).ConfigureAwait(false);
@@ -89,7 +89,7 @@ internal static class Access
 // ---------------------------------------------------------------------------
 // 工具 handler（对应 Go jobs.go 的 registerJobs 与 ownedJob；异常统一转 isError，文案照抄）
 // ---------------------------------------------------------------------------
-internal sealed class JobsTools(IOneSshStoreFull store, IJobManager jobs, IDenylist? denylist)
+internal sealed class JobsTools(ISubSshStoreFull store, IJobManager jobs, IDenylist? denylist)
 {
     private async Task<McpToolResult> GuardAsync(string tool, McpCallContext ctx, CancellationToken ct, Func<Task<McpToolResult>> body)
     {

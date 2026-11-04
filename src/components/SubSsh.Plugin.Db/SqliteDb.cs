@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Db — SQLite 实现（对应 Go internal/store/store.go）。
-// GPL-3.0，移植自 OneSSH；migration SQL 原样嵌入执行（仅按 Microsoft.Data.Sqlite 约束拆分多语句）。
+// GPL-3.0，移植自 SubSSH；migration SQL 原样嵌入执行（仅按 Microsoft.Data.Sqlite 约束拆分多语句）。
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -10,7 +10,7 @@ using SubSsh.Core.Abstractions;
 namespace SubSsh.Plugin.Db;
 
 /// <summary>SQLite 实现。可插拔语义由 DbPlugin 的 ctx.Track 清理效果保证（卸载即关闭连接）。</summary>
-public sealed partial class SqliteDb : IOneSshStoreFull
+public sealed partial class SqliteDb : ISubSshStoreFull
 {
     private readonly SqliteConnection _conn;
     // Microsoft.Data.Sqlite 的单连接不是线程安全的；Go 版的 writeMu 热点写锁在此推广为全库串行锁。
@@ -23,6 +23,14 @@ public sealed partial class SqliteDb : IOneSshStoreFull
     public static SqliteDb Open(string dataDir)
     {
         Directory.CreateDirectory(dataDir);
+        // 旧数据文件名迁移：subssh.db 不存在而 onessh.db 存在时原地改名，保留全部数据
+        var legacy = Path.Combine(dataDir, "onessh.db");
+        var current = Path.Combine(dataDir, "subssh.db");
+        if (File.Exists(legacy) && !File.Exists(current))
+        {
+            try { File.Move(legacy, current); }
+            catch (IOException) { /* 同名占用等场景忽略，按新建库继续 */ }
+        }
         // Go 版为 artifacts / command-runs 数据目录做 0700；Windows 上 ACL 语义不同，尽力而为。
         foreach (var name in new[] { "artifacts", "command-runs" })
         {
@@ -35,7 +43,7 @@ public sealed partial class SqliteDb : IOneSshStoreFull
         }
         var conn = new SqliteConnection(new SqliteConnectionStringBuilder
         {
-            DataSource = Path.Combine(dataDir, "onessh.db"),
+            DataSource = Path.Combine(dataDir, "subssh.db"),
             Mode = SqliteOpenMode.ReadWriteCreate,
         }.ToString());
         conn.Open();

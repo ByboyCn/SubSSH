@@ -1,6 +1,6 @@
 // SubSsh.Plugin.ToolGroups — 应用/功能组插件：发布 IToolGroups（工具组目录），
 // 并把 Plugin.Db 的持久化边界校验 hook 接到 ToolGroupCatalog（fail-closed）。
-// GPL-3.0，移植自 OneSSH internal/toolgroups/toolgroups.go。
+// GPL-3.0，移植自 SubSSH internal/toolgroups/toolgroups.go。
 using System.Reflection;
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;

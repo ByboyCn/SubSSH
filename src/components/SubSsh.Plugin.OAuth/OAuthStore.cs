@@ -1,4 +1,4 @@
-// OAuth 持久化的最小可�?SQL 实现（对应原�?internal/store/oauth.go + auth_sessions.go �?OAuth 相关部分）�?// 直接�?OAuth 插件内通过 IOneSshStore.ConnectionString 执行 SQL；表结构�?Plugin.Db �?// migration 0004_oauth.sql + 0005_oauth_code_tombstone.sql 提供。待 Db 插件补齐
+// OAuth 持久化的最小可�?SQL 实现（对应原�?internal/store/oauth.go + auth_sessions.go �?OAuth 相关部分）�?// 直接�?OAuth 插件内通过 ISubSshStore.ConnectionString 执行 SQL；表结构�?Plugin.Db �?// migration 0004_oauth.sql + 0005_oauth_code_tombstone.sql 提供。待 Db 插件补齐
 // IOAuthStoreExtension 后可替换为共享实现（见报告的存取方法清单）。
 using System.Security.Cryptography;
 using System.Text;

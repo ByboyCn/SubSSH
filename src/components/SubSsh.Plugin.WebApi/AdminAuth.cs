@@ -1,6 +1,6 @@
 // 管理端会话认证：语义对齐原版 internal/webapi/auth.go。
-// 会话 cookie：onessh_session = "<exp_unix秒>.<hmac_sha256(exp, key)hex>"，有效期 24h；
-// key = SHA256(masterKey ‖ "onessh-admin-session")；密码比较为常量时间。
+// 会话 cookie：subssh_session = "<exp_unix秒>.<hmac_sha256(exp, key)hex>"，有效期 24h；
+// key = SHA256(masterKey ‖ "subssh-admin-session")；密码比较为常量时间。
 namespace SubSsh.Plugin.WebApi;
 
 using System.Security.Cryptography;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 public sealed class AdminAuth
 {
-    private const string CookieName = "onessh_session";
+    private const string CookieName = "subssh_session";
     private const int MaxAgeSeconds = 86400;
     private readonly string _password;
     private readonly byte[] _key;
@@ -18,7 +18,7 @@ public sealed class AdminAuth
     {
         _password = password ?? "";
         using var sha = SHA256.Create();
-        _key = sha.ComputeHash(Encoding.UTF8.GetBytes((masterKey ?? "") + "onessh-admin-session"));
+        _key = sha.ComputeHash(Encoding.UTF8.GetBytes((masterKey ?? "") + "subssh-admin-session"));
     }
 
     /// <summary>常量时间密码比较，失败写 "密码错误" 401（对齐 Login）。</summary>

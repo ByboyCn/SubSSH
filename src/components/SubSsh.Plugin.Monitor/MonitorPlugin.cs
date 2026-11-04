@@ -1,6 +1,6 @@
 // SubSsh.Plugin.Monitor — 公共主机监控组件插件（可插拔、可任意替换：换同接口插件即可替换监控实现）。
-// GPL-3.0，移植自 OneSSH internal/monitor/monitor.go（采样命令与 /proc 解析逻辑逐行移植）。
-// 时空可组合：IConnectionPool + IOneSshStoreFull + ICommandRunner + ISettings 四个依赖全部在线时
+// GPL-3.0，移植自 SubSSH internal/monitor/monitor.go（采样命令与 /proc 解析逻辑逐行移植）。
+// 时空可组合：IConnectionPool + ISubSshStoreFull + ICommandRunner + ISettings 四个依赖全部在线时
 // 构建并发布 IHostMonitor；任一下线即静默撤回，等待依赖回归。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
@@ -13,7 +13,7 @@ public sealed class MonitorPlugin : IComponent
     public string Name => "monitor";
 
     private ISettings? _settings;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IConnectionPool? _pool;
     private ICommandRunner? _runner;
     private HostMonitor? _monitor;
@@ -25,7 +25,7 @@ public sealed class MonitorPlugin : IComponent
 
         ctx.Require<ISettings>(s => { _settings = s; TryBuild(ctx); },
             () => { _settings = null; TryUnbuild(ctx); });
-        ctx.Require<IOneSshStoreFull>(s => { _store = s; TryBuild(ctx); },
+        ctx.Require<ISubSshStoreFull>(s => { _store = s; TryBuild(ctx); },
             () => { _store = null; TryUnbuild(ctx); });
         ctx.Require<IConnectionPool>(s => { _pool = s; TryBuild(ctx); },
             () => { _pool = null; TryUnbuild(ctx); });

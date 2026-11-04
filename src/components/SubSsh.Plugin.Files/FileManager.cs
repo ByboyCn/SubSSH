@@ -107,7 +107,7 @@ public sealed class FileManager(IConnectionPool pool) : IFileManager
         var c = await _clients.GetAsync(host, ct);
         file = await RemotePathResolver.ResolveAsync(c, file, ct);
         await c.MkdirAllAsync(PosixPath.Dir(file), ct);
-        var tmp = file + ".onessh-tmp-" + RandomSuffix();
+        var tmp = file + ".subssh-tmp-" + RandomSuffix();
         try
         {
             await using (var f = await c.OpenWriteAsync(tmp, ct))
@@ -224,7 +224,7 @@ public sealed class FileManager(IConnectionPool pool) : IFileManager
         var input = await src.OpenReadAsync(srcPath, tct);
         long n;
         string sourceHashHex;
-        var tmp = dstPath + ".onessh-tmp-" + RandomSuffix();
+        var tmp = dstPath + ".subssh-tmp-" + RandomSuffix();
         await using (input.ConfigureAwait(false))
         {
             await dst.MkdirAllAsync(PosixPath.Dir(dstPath), tct);

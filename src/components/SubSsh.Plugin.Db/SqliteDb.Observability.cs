@@ -8,7 +8,7 @@ namespace SubSsh.Plugin.Db;
 public sealed partial class SqliteDb
 {
     /// <summary>单个筛选维度上限（对齐 Go MaxAuditFilterValues；token 条件每项占 3 个变量）。</summary>
-    public const int MaxAuditFilterValues = OneSshStoreLimits.MaxAuditFilterValues;
+    public const int MaxAuditFilterValues = SubSshStoreLimits.MaxAuditFilterValues;
 
     private static void ValidateAuditFilterCount(string name, int count)
     {

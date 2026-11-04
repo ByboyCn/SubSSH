@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SubSsh.Core.Models;
 
-// 数据模型对齐 OneSSH internal/store/models.go 的 json tag（camelCase 属性）。
+// 数据模型对齐 SubSSH internal/store/models.go 的 json tag（camelCase 属性）。
 // sql.NullInt64/NullString/NullFloat64 → C# 可空原生类型；json:"-" → [JsonIgnore]。
 
 /// <summary>SSH 密钥（对应 Go store.Key）。</summary>

@@ -1,8 +1,8 @@
 // SubSsh.Plugin.Memory — 记忆引擎公共组件插件（可插拔、可任意替换）。
-// 全量移植 OneSSH internal/memoryx/engine.go + embed.go：
+// 全量移植 SubSSH internal/memoryx/engine.go + embed.go：
 // Remember（同 bank 同内容去重、只升重要度）/ Update（内容变化重建 embedding）/
 // Recall（FTS5 bm25 归一 + 可选向量余弦混合打分）/ Sleep（确定性维护：去重/衰减/清理）。
-// 依赖：Require ISettings（EmbeddingApiUrl/Key/Model）、IOneSshStoreFull；Provide<IMemoryEngine>。
+// 依赖：Require ISettings（EmbeddingApiUrl/Key/Model）、ISubSshStoreFull；Provide<IMemoryEngine>。
 // EmbeddingApiUrl（或 Model）为空时走 Go 版 no-embedding 路径（纯 FTS，engine=fts/like）。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
@@ -21,7 +21,7 @@ public sealed class MemoryPlugin : IComponent
         ctx.Require<ISettings>(
             s =>
             {
-                ctx.Require<IOneSshStoreFull>(
+                ctx.Require<ISubSshStoreFull>(
                     st =>
                     {
                         if (engine != null)

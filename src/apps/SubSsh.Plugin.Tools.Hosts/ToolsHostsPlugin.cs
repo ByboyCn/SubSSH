@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Tools.Hosts — 主机工具包插件（对应 Go mcpserver/hosts.go 全部工具）。
-// Require: IMcpServer + IToolRegistry（注册工具）+ IHostManager + IOneSshStoreFull + IToolGroups（必需）；
+// Require: IMcpServer + IToolRegistry（注册工具）+ IHostManager + ISubSshStoreFull + IToolGroups（必需）；
 //          IConnectionPool（可选，hosts_list/hosts_manage_list 的 online 状态）；IDenylist（可选，令牌级兜底拦截）。
 // 空间可组合：必需提供者齐备才注册工具，任一下线即撤回本插件引用并静默等待；
 // 时间可组合：每次注册经 ctx.Track 登记（MCP 侧卸载时注册表随提供者一起消失）。
@@ -17,7 +17,7 @@ public sealed class ToolsHostsPlugin : IComponent
 
     private IContext? _ctx;
     private IToolRegistry? _registry;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IHostManager? _manager;
     private IToolGroups? _groups;
     private IConnectionPool? _pool;
@@ -43,7 +43,7 @@ public sealed class ToolsHostsPlugin : IComponent
         ctx.Require<IMcpServer>(_ => Publish(), DropRegistry);
         ctx.Require<IToolRegistry>(r => { _registry = r; Publish(); }, DropRegistry);
         ctx.Require<IHostManager>(m => { _manager = m; Publish(); }, DropManager);
-        ctx.Require<IOneSshStoreFull>(s => { _store = s; Publish(); }, DropStore);
+        ctx.Require<ISubSshStoreFull>(s => { _store = s; Publish(); }, DropStore);
         ctx.Require<IToolGroups>(g => { _groups = g; Publish(); }, DropGroups);
 
         // 可选依赖：在线状态与令牌级 denylist，可用即接入，下线仅降级

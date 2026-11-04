@@ -1,5 +1,5 @@
 // 主机工具实现（对应 Go mcpserver/hosts.go 的 handler 面）。
-// 权限：McpCallContext 当前无 ManageHosts 位，经 IOneSshStoreFull.GetTokenAsync 查
+// 权限：McpCallContext 当前无 ManageHosts 位，经 ISubSshStoreFull.GetTokenAsync 查
 // ApiToken.ManageHosts 实现校验，语义与错误文案对齐 Go auth.go 的 AuthorizedHostManagement。
 using System.Net;
 using System.Text.Encodings.Web;
@@ -68,7 +68,7 @@ internal static class Args
 /// </summary>
 internal static class Access
 {
-    public static async Task<ApiToken> TokenAsync(IOneSshStoreFull store, McpCallContext ctx, CancellationToken ct)
+    public static async Task<ApiToken> TokenAsync(ISubSshStoreFull store, McpCallContext ctx, CancellationToken ct)
     {
         var token = ctx.TokenId > 0 ? await store.GetTokenAsync(ctx.TokenId, ct).ConfigureAwait(false) : null;
         if (token == null) throw new SubSshException("unauthorized");
@@ -76,14 +76,14 @@ internal static class Access
     }
 
     /// <summary>manage_hosts 校验（对应 Go AuthorizedHostManagement；错误文案照抄）。</summary>
-    public static async Task<ApiToken> RequireManageHostsAsync(IOneSshStoreFull store, McpCallContext ctx, CancellationToken ct)
+    public static async Task<ApiToken> RequireManageHostsAsync(ISubSshStoreFull store, McpCallContext ctx, CancellationToken ct)
     {
         var token = await TokenAsync(store, ctx, ct).ConfigureAwait(false);
         if (!token.ManageHosts) throw new SubSshException("host management not authorized");
         return token;
     }
 
-    public static async Task<HostConfig> AuthorizedHostAsync(IOneSshStoreFull store, McpCallContext ctx, string name, CancellationToken ct)
+    public static async Task<HostConfig> AuthorizedHostAsync(ISubSshStoreFull store, McpCallContext ctx, string name, CancellationToken ct)
     {
         var token = await TokenAsync(store, ctx, ct).ConfigureAwait(false);
         var host = await store.GetHostByNameAsync(name, ct).ConfigureAwait(false);
@@ -95,7 +95,7 @@ internal static class Access
         return host;
     }
 
-    public static async Task<bool> CanAccessHostAsync(IOneSshStoreFull store, ApiToken token, long hostId, CancellationToken ct)
+    public static async Task<bool> CanAccessHostAsync(ISubSshStoreFull store, ApiToken token, long hostId, CancellationToken ct)
     {
         if (token.AllHosts) return true;
         var ids = await store.TokenHostIdsAsync(token.Id, ct).ConfigureAwait(false);
@@ -103,7 +103,7 @@ internal static class Access
     }
 
     /// <summary>令牌可见主机集合（对应 Go Principal.Hosts：已归档主机不可见）。</summary>
-    public static async Task<IReadOnlyList<HostConfig>> TokenHostsAsync(IOneSshStoreFull store, ApiToken token, CancellationToken ct)
+    public static async Task<IReadOnlyList<HostConfig>> TokenHostsAsync(ISubSshStoreFull store, ApiToken token, CancellationToken ct)
     {
         if (token.AllHosts)
             return (await store.ListHostsAsync(ct).ConfigureAwait(false)).Where(h => h.ArchivedAt == null).ToList();
@@ -121,7 +121,7 @@ internal static class Access
 // ---------------------------------------------------------------------------
 // 工具 handler（每个 handler 对应 Go hosts.go 的同名方法；异常统一转 isError，文案照抄）
 // ---------------------------------------------------------------------------
-internal sealed class HostsTools(IOneSshStoreFull store, IHostManager manager, IConnectionPool? pool, IDenylist? denylist)
+internal sealed class HostsTools(ISubSshStoreFull store, IHostManager manager, IConnectionPool? pool, IDenylist? denylist)
 {
     private async Task<McpToolResult> GuardAsync(string tool, McpCallContext ctx, CancellationToken ct, Func<Task<McpToolResult>> body)
     {
@@ -144,7 +144,7 @@ internal sealed class HostsTools(IOneSshStoreFull store, IHostManager manager, I
         addr.Contains(':') ? $"[{addr}]:{port}" : $"{addr}:{port}";
 
     /// <summary>对应 Go hostByName。</summary>
-    private static async Task<HostConfig> HostByNameAsync(IOneSshStoreFull store, string name, CancellationToken ct)
+    private static async Task<HostConfig> HostByNameAsync(ISubSshStoreFull store, string name, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new SubSshException("host 不能为空");
         var host = await store.GetHostByNameAsync(name, ct).ConfigureAwait(false);

@@ -1,6 +1,6 @@
 /**
  * 后端 REST 契约类型（SubSsh.Plugin.WebApi /api/v1）。
- * 字段为 camelCase（System.Text.Json 默认序列化），形状对齐 OneSSH 原版 web/src/api/types.ts。
+ * 字段为 camelCase（System.Text.Json 默认序列化），形状对齐 SubSSH 原版 web/src/api/types.ts。
  */
 
 export type AuthType = 'key' | 'password'

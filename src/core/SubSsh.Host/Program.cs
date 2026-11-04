@@ -1,5 +1,5 @@
 // SubSsh.Host — 唯一 exe（宿主）：宿主永远不变，一切皆插件（可插拔、可任意替换）。
-// GPL-3.0，移植自 https://github.com/Lynricsy/OneSSH，架构遵循
+// GPL-3.0，移植自 https://github.com/Lynricsy/SubSSH，架构遵循
 // 《A Programming Paradigm for Spatiotemporal Composability》(arXiv:2608.25512)。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
@@ -18,7 +18,7 @@ public static class Program
         var composition = new Composition();
         var bus = new EventBus();
 
-        // 宿主级设置：读环境变量（ONESSH_*），作为第一个服务发布
+        // 宿主级设置：读环境变量（SUBSSH_*），作为第一个服务发布
         var settings = HostSettings.FromEnvironment(baseDir);
         composition.Provide<ISettings>("host", settings);
 
@@ -94,10 +94,10 @@ public static class Program
                     case "services":
                         foreach (var p in manager.Loaded)
                             Console.WriteLine($"  插件 {p}");
-                        foreach (var t in new[] { typeof(ISettings), typeof(IOneSshStore), typeof(IOAuthService), typeof(IWebApiServer) })
+                        foreach (var t in new[] { typeof(ISettings), typeof(ISubSshStore), typeof(IOAuthService), typeof(IWebApiServer) })
                         {
                             var provider = t == typeof(ISettings) ? composition.ProviderOf<ISettings>()
-                                : t == typeof(IOneSshStore) ? composition.ProviderOf<IOneSshStore>()
+                                : t == typeof(ISubSshStore) ? composition.ProviderOf<ISubSshStore>()
                                 : t == typeof(IOAuthService) ? composition.ProviderOf<IOAuthService>()
                                 : composition.ProviderOf<IWebApiServer>();
                             Console.WriteLine($"  {t.Name} ← {(provider is null ? "（无提供者）" : provider)}");
@@ -121,7 +121,7 @@ public static class Program
     }
 }
 
-/// <summary>宿主设置：ONESSH_* 环境变量 + 默认值（对应原版 config.go 语义）。</summary>
+/// <summary>宿主设置：SUBSSH_* 环境变量 + 默认值（对应原版 config.go 语义）。</summary>
 public sealed class HostSettings : ISettings
 {
     public string DataDir { get; init; } = "";
@@ -139,18 +139,18 @@ public sealed class HostSettings : ISettings
 
     public static HostSettings FromEnvironment(string baseDir) => new()
     {
-        DataDir = Env("ONESSH_DATA_DIR", Path.Combine(baseDir, "data")),
-        Listen = Env("ONESSH_LISTEN", "127.0.0.1:8080"),
-        PublicUrl = Environment.GetEnvironmentVariable("ONESSH_PUBLIC_URL") ?? "",
-        MasterKey = Environment.GetEnvironmentVariable("ONESSH_MASTER_KEY") ?? "",
-        AdminPassword = Environment.GetEnvironmentVariable("ONESSH_ADMIN_PASSWORD") ?? "",
-        EmbeddingApiUrl = Environment.GetEnvironmentVariable("ONESSH_EMBEDDING_API_URL") ?? "",
-        EmbeddingApiKey = Environment.GetEnvironmentVariable("ONESSH_EMBEDDING_API_KEY") ?? "",
-        EmbeddingModel = Environment.GetEnvironmentVariable("ONESSH_EMBEDDING_MODEL") ?? "",
-        PollInterval = int.TryParse(Environment.GetEnvironmentVariable("ONESSH_POLL_INTERVAL"), out var p) ? p : 30,
-        SearchHelper = Environment.GetEnvironmentVariable("ONESSH_SEARCH_HELPER") ?? "",
-        McpApps = Environment.GetEnvironmentVariable("ONESSH_MCP_APPS") is "1" or "true",
-        DisabledTools = (Environment.GetEnvironmentVariable("ONESSH_DISABLED_TOOLS") ?? "")
+        DataDir = Env("SUBSSH_DATA_DIR", Path.Combine(baseDir, "data")),
+        Listen = Env("SUBSSH_LISTEN", "127.0.0.1:8080"),
+        PublicUrl = Environment.GetEnvironmentVariable("SUBSSH_PUBLIC_URL") ?? "",
+        MasterKey = Environment.GetEnvironmentVariable("SUBSSH_MASTER_KEY") ?? "",
+        AdminPassword = Environment.GetEnvironmentVariable("SUBSSH_ADMIN_PASSWORD") ?? "",
+        EmbeddingApiUrl = Environment.GetEnvironmentVariable("SUBSSH_EMBEDDING_API_URL") ?? "",
+        EmbeddingApiKey = Environment.GetEnvironmentVariable("SUBSSH_EMBEDDING_API_KEY") ?? "",
+        EmbeddingModel = Environment.GetEnvironmentVariable("SUBSSH_EMBEDDING_MODEL") ?? "",
+        PollInterval = int.TryParse(Environment.GetEnvironmentVariable("SUBSSH_POLL_INTERVAL"), out var p) ? p : 30,
+        SearchHelper = Environment.GetEnvironmentVariable("SUBSSH_SEARCH_HELPER") ?? "",
+        McpApps = Environment.GetEnvironmentVariable("SUBSSH_MCP_APPS") is "1" or "true",
+        DisabledTools = (Environment.GetEnvironmentVariable("SUBSSH_DISABLED_TOOLS") ?? "")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
     };
 

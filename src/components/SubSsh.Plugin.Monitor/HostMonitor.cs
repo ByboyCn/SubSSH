@@ -9,25 +9,25 @@ using SubSsh.Core.Abstractions;
 namespace SubSsh.Plugin.Monitor;
 
 public sealed class HostMonitor(
-    IOneSshStoreFull store,
+    ISubSshStoreFull store,
     IConnectionPool pool,
     ICommandRunner exec,
     TimeSpan interval) : IHostMonitor
 {
-    // Go: const command = `cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null || uptime; echo __ONESSH_DF__; df -P -k`
+    // Go: const command = `cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null || uptime; echo __SUBSSH_DF__; df -P -k`
     private const string Command =
-        "cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null || uptime; echo __ONESSH_DF__; df -P -k";
+        "cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null || uptime; echo __SUBSSH_DF__; df -P -k";
 
-    // Go: const cmd = `cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __ONESSH_FIRST__; sleep 1; cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __ONESSH_DF__; df -P -k`
+    // Go: const cmd = `cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __SUBSSH_FIRST__; sleep 1; cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __SUBSSH_DF__; df -P -k`
     private const string FreshCommand =
-        "cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __ONESSH_FIRST__; sleep 1; " +
-        "cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __ONESSH_DF__; df -P -k";
+        "cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __SUBSSH_FIRST__; sleep 1; " +
+        "cat /proc/stat /proc/meminfo /proc/loadavg 2>/dev/null; echo __SUBSSH_DF__; df -P -k";
 
     // Go: maxConcurrentSamples = 5
     private const int MaxConcurrentSamples = 5;
 
-    private const string DfMarker = "__ONESSH_DF__";
-    private const string FirstMarker = "__ONESSH_FIRST__";
+    private const string DfMarker = "__SUBSSH_DF__";
+    private const string FirstMarker = "__SUBSSH_FIRST__";
 
     private readonly TimeSpan _interval = interval;
     private readonly object _mu = new();

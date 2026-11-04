@@ -22,12 +22,12 @@ internal sealed class SshPool : IConnectionPool, IAsyncDisposable
     internal const int MaxJumpChain = 5;
     private static readonly TimeSpan SshConnectTimeout = TimeSpan.FromSeconds(15);
 
-    private readonly IOneSshStoreFull _store;
+    private readonly ISubSshStoreFull _store;
     private readonly ICryptoBox _box;
     private readonly ConcurrentDictionary<string, PoolEntry> _entries = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _closed = new();
 
-    public SshPool(IOneSshStoreFull store, ICryptoBox box)
+    public SshPool(ISubSshStoreFull store, ICryptoBox box)
     {
         _store = store;
         _box = box;

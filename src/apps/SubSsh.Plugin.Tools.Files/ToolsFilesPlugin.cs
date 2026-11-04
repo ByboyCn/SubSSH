@@ -1,6 +1,6 @@
 // SubSsh.Plugin.Tools.Files — 文件类工具组插件。
-// GPL-3.0，移植自 OneSSH internal/mcpserver/{files,image,search,monitor}.go。
-// Require: IMcpServer + IToolRegistry + IOneSshStoreFull（必需）；
+// GPL-3.0，移植自 SubSSH internal/mcpserver/{files,image,search,monitor}.go。
+// Require: IMcpServer + IToolRegistry + ISubSshStoreFull（必需）；
 // IFileManager / IImageInspector / ISearchEngine / IHostMonitor（可选：对应服务在线才注册其工具）。
 using System.Globalization;
 using System.Text;
@@ -20,14 +20,14 @@ public sealed class ToolsFilesPlugin : IComponent
     public string Name => "tools-files";
 
     private IToolRegistry? _registry;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IFileManager? _files;
 
     public Task StartAsync(IContext ctx, CancellationToken ct = default)
     {
         // 必需依赖：注册表与存储；任一下线由 McpCore 卸载管线级联撤回工具（IToolRegistry 无显式反注册 API）
         ctx.Require<IToolRegistry>(r => { _registry = r; }, () => { _registry = null; });
-        ctx.Require<IOneSshStoreFull>(r => { _store = r; }, () => { _store = null; });
+        ctx.Require<ISubSshStoreFull>(r => { _store = r; }, () => { _store = null; });
 
         // 可选能力：对应服务上线才注册其工具（缺省时不注册）
         ctx.Require<IFileManager>(f => { _files = f; RegisterLater(ctx, () => RegisterFileToolsAsync(f)); }, () => { });
@@ -440,7 +440,7 @@ public sealed class ToolsFilesPlugin : IComponent
     /// <summary>主机访问授权（对应 Go AuthorizedHost）。
     /// TODO：令牌级主机集合授权（McpPrincipal 在传输层构造，PrincipalFrom 当前恒 null，见 McpCore）。</summary>
     private static async Task<HostConfig> AuthorizedHostAsync(
-        IOneSshStoreFull store, McpCallContext context, string name, CancellationToken ct)
+        ISubSshStoreFull store, McpCallContext context, string name, CancellationToken ct)
     {
         _ = context;
         var found = await store.GetHostByNameAsync(name, ct).ConfigureAwait(false);

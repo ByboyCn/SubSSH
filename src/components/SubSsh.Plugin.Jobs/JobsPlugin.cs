@@ -1,12 +1,12 @@
 // SubSsh.Plugin.Jobs — 后台任务组件插件（可插拔、可任意替换）。
-// 全量移植 OneSSH internal/jobs/manager.go + maintenance.go：
+// 全量移植 SubSSH internal/jobs/manager.go + maintenance.go：
 // Start/StartTracked（setsid+nohup 落盘 PID 与日志，远端 argv 标记身份核验）、
 // Refresh/RefreshAll（按主机并发探测、整批 8 秒硬预算、挂住主机登记 stuck）、
 // Logs/LogChunk（tail/grep 或字节游标增量，UTF-8 字符边界截断）、
 // Kill（TERM/KILL 白名单 + "job_killed" 语义的 killed 状态）、
 // StartMaintenance/StopMaintenance（首轮 1 分钟后、之后每小时一轮：长期无法确认的
 // 运行任务标 lost、删除超过保留期的已结束记录，文案与 Go 版一致）。
-// 依赖：Require IOneSshStoreFull（任务/命令记录存取）、ICommandRunner（远端探测脚本执行）、
+// 依赖：Require ISubSshStoreFull（任务/命令记录存取）、ICommandRunner（远端探测脚本执行）、
 // IConnectionPool（对应 Go jobs.Manager 持有的 sshpool.Pool）。
 using System.Collections.Concurrent;
 using System.Globalization;
@@ -31,7 +31,7 @@ public sealed class JobsPlugin : IComponent
         // SSE 桥接（可选）：WebApi 在位时把 job_status/command_job_linked/command_finished 转发进 /api/events
         ctx.Require<IWebApiEventBus>(bus => { _sse = bus; WireSse(); },
             () => { _sse = null; UnwireSse(); });
-        ctx.Require<IOneSshStoreFull>(
+        ctx.Require<ISubSshStoreFull>(
             store =>
             {
                 ctx.Require<ICommandRunner>(

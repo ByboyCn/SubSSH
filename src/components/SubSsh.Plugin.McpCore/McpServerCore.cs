@@ -11,14 +11,14 @@ namespace SubSsh.Plugin.McpCore;
 public sealed class McpServerCore : IMcpServer
 {
     private readonly ISettings _settings;
-    private readonly IOneSshStoreFull _store;
+    private readonly ISubSshStoreFull _store;
     private readonly IToolGroups _groups;
     private readonly IConnectionPool? _pool;
     private readonly ICommandRunner? _runner;
     private readonly EventBus _bus = new();
     private volatile bool _started;
 
-    public McpServerCore(ISettings settings, IOneSshStoreFull store, IToolGroups groups,
+    public McpServerCore(ISettings settings, ISubSshStoreFull store, IToolGroups groups,
         IConnectionPool? pool, ICommandRunner? runner)
     {
         _settings = settings;
@@ -33,7 +33,7 @@ public sealed class McpServerCore : IMcpServer
 
     public ToolRegistry Registry { get; }
     public McpHttpMount HttpMount { get; }
-    public string Name => "OneSSH";
+    public string Name => "SubSSH";
     public string Version => "dev";
     public EventBus Events => _bus;
 
@@ -249,7 +249,7 @@ public sealed class McpServerCore : IMcpServer
 
     internal McpPrincipal? PrincipalFrom(McpCallContext context) => null; // TODO：principal 主机集合在传输层构造，见 McpHttpMount
 
-    internal IOneSshStoreFull Store => _store;
+    internal ISubSshStoreFull Store => _store;
     internal EventBus Bus => _bus;
     internal IConnectionPool? Pool => _pool;
     internal ICommandRunner? Runner => _runner;

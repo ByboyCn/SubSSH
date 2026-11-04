@@ -1,5 +1,5 @@
 // SubSsh.Plugin.WebApi — 公共 Web 组件插件（可插拔、可任意替换）。
-// Requires：ISettings、IOneSshStoreFull（构造 WebApiStoreAdapter 适配为 IWebApiStore 并 Provide）、
+// Requires：ISettings、ISubSshStoreFull（构造 WebApiStoreAdapter 适配为 IWebApiStore 并 Provide）、
 // IOAuthService（必需）+ IWebApiHostManager/IWebApiConnectionPool/IWebApiCommandRunner/
 // IWebApiJobManager/IWebApiFileManager（可选，上线自动绑入、下线自动解绑）。
 // Provide：IWebApiServer + IWebApiStore（原版 internal/webapi 的完整移植）。
@@ -43,10 +43,10 @@ public sealed class WebApiPlugin : IComponent
         ctx.Require<ISettings>(
             settings =>
             {
-                ctx.Require<IOneSshStoreFull>(
+                ctx.Require<ISubSshStoreFull>(
                     store =>
                     {
-                        // Db 插件提供 IOneSshStoreFull，这里适配成 WebApi 需要的窄接口并对外 Provide，
+                        // Db 插件提供 ISubSshStoreFull，这里适配成 WebApi 需要的窄接口并对外 Provide，
                         // 使其他消费 IWebApiStore 的组件无需感知存储全量接口。
                         var adapter = new WebApiStoreAdapter(store);
                         ctx.Provide<IWebApiStore>(adapter);

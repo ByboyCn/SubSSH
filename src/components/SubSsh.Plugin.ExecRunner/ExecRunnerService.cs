@@ -1,6 +1,6 @@
 // SubSsh.Plugin.ExecRunner — ExecRunnerService：execx/runner.go 全量 C# 移植。
 // 语义 1:1：256 KiB 捕获上限（head=(limit+1)/2 + tail）、唯一 trailer 标记
-// "\n\x01ONESSH:<uuid>:"、超时先 SSH SIGKILL 再关会话、artifact 拼接捕获文件、
+// "\n\x01SUBSSH:<uuid>:"、超时先 SSH SIGKILL 再关会话、artifact 拼接捕获文件、
 // 字节游标分页在 UTF-8 字符边界截断。
 using System.Buffers;
 using System.Globalization;
@@ -15,9 +15,9 @@ public sealed partial class ExecRunnerService : ICommandRunner, IExecSessionPers
     private const int CaptureLimit = 256 << 10;
 
     private readonly string _dataDir;
-    private readonly IOneSshStoreFull _store;
+    private readonly ISubSshStoreFull _store;
 
-    public ExecRunnerService(string dataDir, IOneSshStoreFull store)
+    public ExecRunnerService(string dataDir, ISubSshStoreFull store)
     {
         _dataDir = dataDir;
         _store = store;
@@ -47,7 +47,7 @@ public sealed partial class ExecRunnerService : ICommandRunner, IExecSessionPers
                 b.Append("export ").Append(k).Append('=').Append(SHQ(env[k])).Append('\n');
             }
         }
-        b.Append("{ ").Append(command).Append("\n}\n__ec=$?\nprintf '\\n\\001ONESSH:");
+        b.Append("{ ").Append(command).Append("\n}\n__ec=$?\nprintf '\\n\\001SUBSSH:");
         if (trailerId.Length != 0)
         {
             b.Append(trailerId).Append(':');
@@ -70,7 +70,7 @@ public sealed partial class ExecRunnerService : ICommandRunner, IExecSessionPers
         var capture = opt.CaptureId.Length != 0 ? await OpenCommandCaptureAsync(opt.CaptureId) : null;
 
         var trailerId = Guid.NewGuid().ToString("D");
-        var trailerMarker = Encoding.UTF8.GetBytes("\n\x01ONESSH:" + trailerId + ":");
+        var trailerMarker = Encoding.UTF8.GetBytes("\n\x01SUBSSH:" + trailerId + ":");
 
         var stdout = new LimitedWriter(CaptureLimit, "stdout", opt.OnOutput, stripTrailer: true, trailerMarker);
         var stderr = new LimitedWriter(CaptureLimit, "stderr", opt.OnOutput, stripTrailer: false, []);
@@ -667,7 +667,7 @@ public sealed partial class ExecRunnerService : ICommandRunner, IExecSessionPers
     }
 
     // ------------------------------------------------------------------
-    // session cwd/env 持久化（Go mcpserver exec 工具的 session 存取面，走 IOneSshStoreFull）
+    // session cwd/env 持久化（Go mcpserver exec 工具的 session 存取面，走 ISubSshStoreFull）
     // ------------------------------------------------------------------
 
     public async Task<SessionRecord> GetAsync(long tokenId, long hostId, string label, CancellationToken ct = default)
@@ -710,7 +710,7 @@ internal sealed class LimitedWriter(int limit, string stream, OutputCallback? ca
     private readonly byte[] _marker = stripTrailer && trailerMarker.Length == 0 ? LegacyMarker : trailerMarker;
     private bool _stopped;
 
-    private static readonly byte[] LegacyMarker = "\n\x01ONESSH:"u8.ToArray();
+    private static readonly byte[] LegacyMarker = "\n\x01SUBSSH:"u8.ToArray();
 
     public Stream? Full { get; set; }
     public Exception? FullError { get; private set; }

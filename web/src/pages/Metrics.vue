@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { listHosts, listMetrics } from '@/api/client'
 import type { Host, Metric } from '@/types'
 import { useToastStore } from '@/stores/toast'
 
 const toast = useToastStore()
+const router = useRouter()
 const hosts = ref<Host[]>([])
+const hostsLoaded = ref(false)
 const hostId = ref<number>()
 const hours = ref(24)
 const metrics = ref<Metric[]>([])
 const loading = ref(false)
 let timer: number | undefined
+
+const noHosts = computed(() => hostsLoaded.value && hosts.value.length === 0)
 
 async function refresh() {
   if (hostId.value == null) return
@@ -33,6 +38,8 @@ onMounted(async () => {
     }
   } catch (e) {
     toast.error(e)
+  } finally {
+    hostsLoaded.value = true
   }
   timer = window.setInterval(refresh, 60_000)
 })
@@ -57,7 +64,19 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleTimeString()
 </script>
 
 <template>
-  <div class="space-y-4">
+  <!-- 无主机：引导用户先添加 -->
+  <div v-if="noHosts" class="card grid h-full place-items-center py-24">
+    <div class="text-center">
+      <div class="mb-3 text-4xl">📈</div>
+      <p class="mb-1 text-base font-medium">暂无服务器</p>
+      <p class="mb-4 text-sm text-muted">先到「主机」页添加一台服务器，即可查看资源指标</p>
+      <button class="btn btn-primary" @click="router.push('/hosts')">去添加主机</button>
+    </div>
+  </div>
+
+  <div v-else-if="!hostsLoaded" class="card grid h-full place-items-center py-24 text-sm text-muted">加载中…</div>
+
+  <div v-else class="space-y-4">
     <div class="flex items-center gap-2">
       <select v-model.number="hostId" class="input w-48" @change="refresh()">
         <option v-for="h in hosts" :key="h.id" :value="h.id">{{ h.name }}</option>

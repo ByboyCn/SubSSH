@@ -82,7 +82,7 @@ internal sealed class SshRemoteConnection : IRemoteConnection
 
     internal void SendKeepAlive()
     {
-        // 对应 Go c.SendRequest("keepalive@onessh", true, nil)。
+        // 对应 Go c.SendRequest("keepalive@subssh", true, nil)。
 #pragma warning disable CS0618
         _client.SendKeepAlive();
 #pragma warning restore CS0618

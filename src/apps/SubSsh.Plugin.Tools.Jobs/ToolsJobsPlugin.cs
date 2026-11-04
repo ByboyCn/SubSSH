@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Tools.Jobs — 后台任务工具包插件（对应 Go mcpserver/jobs.go 全部工具）。
-// Require: IMcpServer + IToolRegistry（注册工具）+ IJobManager + IOneSshStoreFull + IHostManager（按名解析 host）
+// Require: IMcpServer + IToolRegistry（注册工具）+ IJobManager + ISubSshStoreFull + IHostManager（按名解析 host）
 //          + IToolGroups（必需）；IDenylist（可选，令牌级兜底拦截）。
 // 空间可组合：必需提供者齐备才注册工具，任一下线即撤回本插件引用并静默等待；
 // 时间可组合：每次注册经 ctx.Track 登记（MCP 侧卸载时注册表随提供者一起消失）。
@@ -18,7 +18,7 @@ public sealed class ToolsJobsPlugin : IComponent
     private IContext? _ctx;
     private IToolRegistry? _registry;
     private IJobManager? _jobs;
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
     private IHostManager? _manager;
     private IToolGroups? _groups;
     private IDenylist? _denylist;
@@ -45,7 +45,7 @@ public sealed class ToolsJobsPlugin : IComponent
         ctx.Require<IMcpServer>(_ => Publish(), DropRegistry);
         ctx.Require<IToolRegistry>(r => { _registry = r; Publish(); }, DropRegistry);
         ctx.Require<IJobManager>(j => { _jobs = j; Publish(); }, DropJobs);
-        ctx.Require<IOneSshStoreFull>(s => { _store = s; Publish(); }, DropStore);
+        ctx.Require<ISubSshStoreFull>(s => { _store = s; Publish(); }, DropStore);
         ctx.Require<IHostManager>(m => { _manager = m; Publish(); }, DropManager);
         ctx.Require<IToolGroups>(g => { _groups = g; Publish(); }, DropGroups);
 
@@ -63,7 +63,7 @@ public sealed class ToolsJobsPlugin : IComponent
         Register(ctx, registry, ToolNames.JobStart,
             "在远程主机用 setsid + nohup 启动后台任务，立即返回 job_id 与 PID，SSH 会话断开也不会中断。" +
             "适合部署、构建、迁移、抓包这类超过 exec 600 秒上限或需要长期运行的工作；几十秒内能跑完的命令直接用 exec。" +
-            "输出合并写入远端 ~/.onessh/jobs/<job_id>/out.log，用 job_logs 读取、job_status 判断结束与退出码、job_kill 终止；日志文件不会自动清理。",
+            "输出合并写入远端 ~/.subssh/jobs/<job_id>/out.log，用 job_logs 读取、job_status 判断结束与退出码、job_kill 终止；日志文件不会自动清理。",
             Schema(new
             {
                 type = "object",

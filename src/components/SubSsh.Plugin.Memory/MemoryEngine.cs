@@ -19,11 +19,11 @@ public sealed class MemoryEngine : IMemoryEngine, IDisposable
     private const int MaxRecallLimit = 50;
     private const double RecencyHalfLife = 72.0;
 
-    private readonly IOneSshStoreFull _store;
+    private readonly ISubSshStoreFull _store;
     private readonly ISettings _settings;
     private readonly Embedder? _embedder;
 
-    public MemoryEngine(IOneSshStoreFull store, ISettings settings)
+    public MemoryEngine(ISubSshStoreFull store, ISettings settings)
     {
         _store = store;
         _settings = settings;

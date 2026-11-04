@@ -11,7 +11,7 @@ public static class InstructionsText
     {
         var sections = new List<string>(8);
 
-        var opening = "OneSSH 是受主机权限控制的 SSH 运维网关：通过它连接远程主机";
+        var opening = "SubSSH 是受主机权限控制的 SSH 运维网关：通过它连接远程主机";
         var caps = new List<string>();
         if (disabled.Enabled(ToolGroup.Exec)) caps.Add("执行命令");
         if (disabled.Enabled(ToolGroup.Files)) caps.Add("读写文件");

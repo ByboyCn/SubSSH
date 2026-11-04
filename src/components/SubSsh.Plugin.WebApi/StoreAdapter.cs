@@ -1,4 +1,4 @@
-// SubSsh.Plugin.WebApi — WebApiStoreAdapter：把公共存储组件 IOneSshStoreFull（Plugin.Db 提供）
+// SubSsh.Plugin.WebApi — WebApiStoreAdapter：把公共存储组件 ISubSshStoreFull（Plugin.Db 提供）
 // 适配为 WebApi 所需的 IWebApiStore 窄接口。模型转换逐字段对齐两侧定义：
 //   WebApiHostView  ↔ HostConfig.View()（HostViewConfig）
 //   WebApiKeyView   ↔ SshKey
@@ -15,9 +15,9 @@ namespace SubSsh.Plugin.WebApi;
 
 using SubSsh.Core.Abstractions;
 
-public sealed class WebApiStoreAdapter(IOneSshStoreFull store) : IWebApiStore
+public sealed class WebApiStoreAdapter(ISubSshStoreFull store) : IWebApiStore
 {
-    private readonly IOneSshStoreFull _store = store;
+    private readonly ISubSshStoreFull _store = store;
 
     // ---------- 主机 ----------
 

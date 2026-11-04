@@ -1,5 +1,5 @@
 // SubSsh.Plugin.McpHttp — MCP streamable-http 传输插件（可插拔、可任意替换）。
-// GPL-3.0。自宿独立端口的 Kestrel（默认 Listen+1，可用 ONESSH_MCP_LISTEN 覆盖）：
+// GPL-3.0。自宿独立端口的 Kestrel（默认 Listen+1，可用 SUBSSH_MCP_LISTEN 覆盖）：
 // - POST /mcp：复用 McpCore 的 IMcpHttpHandler（Bearer 401+WWW-Authenticate、通知 202、JSON-RPC 200）
 // - GET  /mcp：本实现仅支持无状态 POST，SSE 建流返回 405
 // - GET /.well-known/oauth-protected-resource[/-mcp]：IOAuthService 在位时出 RFC 9728 元数据
@@ -110,10 +110,10 @@ public sealed class McpHttpPlugin : IComponent
         try { app.DisposeAsync().AsTask().GetAwaiter().GetResult(); } catch { }
     }
 
-    /// <summary>监听地址：ONESSH_MCP_LISTEN 优先；否则复用主监听的 host、端口 +1（Listen+1 语义）。</summary>
+    /// <summary>监听地址：SUBSSH_MCP_LISTEN 优先；否则复用主监听的 host、端口 +1（Listen+1 语义）。</summary>
     private static string ResolveListen(ISettings settings)
     {
-        if (Environment.GetEnvironmentVariable("ONESSH_MCP_LISTEN") is { Length: > 0 } v) return v;
+        if (Environment.GetEnvironmentVariable("SUBSSH_MCP_LISTEN") is { Length: > 0 } v) return v;
         var listen = settings.Listen;
         var idx = listen.LastIndexOf(':');
         if (idx <= 0 || !int.TryParse(listen[(idx + 1)..], out var port)) return listen;

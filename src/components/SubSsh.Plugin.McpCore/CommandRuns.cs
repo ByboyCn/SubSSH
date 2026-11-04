@@ -18,7 +18,7 @@ public static class CommandRuns
     private const int CommandPreviewLimit = 64 << 10;
 
     public static async Task<CommandRun> StartCommandRunAsync(
-        IOneSshStoreFull store, EventBus bus, McpPrincipal? principal,
+        ISubSshStoreFull store, EventBus bus, McpPrincipal? principal,
         string tool, HostConfig host, string command, string cwd, string session, CancellationToken ct = default)
     {
         var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -58,7 +58,7 @@ public static class CommandRuns
     }
 
     public static async Task FinishCommandRunAsync(
-        IOneSshStoreFull store, EventBus bus, CommandRun run, ExecResult result, Exception? runErr, CancellationToken requestCt)
+        ISubSshStoreFull store, EventBus bus, CommandRun run, ExecResult result, Exception? runErr, CancellationToken requestCt)
     {
         var status = RunStatus(result, runErr, requestCt);
         long? exitCode = status is "cancelled" or "timeout"

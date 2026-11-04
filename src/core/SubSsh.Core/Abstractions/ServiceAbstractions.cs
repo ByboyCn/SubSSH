@@ -18,7 +18,7 @@ public interface ISettings
 }
 
 /// <summary>数据库公共组件（骨架子集；后续按 store/store.go 扩全方法集）。</summary>
-public interface IOneSshStore : IAsyncDisposable
+public interface ISubSshStore : IAsyncDisposable
 {
     Task<bool> HealthAsync(CancellationToken ct = default);
     string ConnectionString { get; }

@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Files — 公共文件组件插件（可插拔、可任意替换：换同接口插件即可替换文件管理实现）。
-// GPL-3.0，移植自 OneSSH internal/files（manager.go / client.go）。
+// GPL-3.0，移植自 SubSSH internal/files（manager.go / client.go）。
 using SubSsh.Core.Abstractions;
 using SubSsh.Core.Composition;
 

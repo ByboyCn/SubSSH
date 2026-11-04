@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Denylist — DenylistService：mcpserver/denylist.go 全量 C# 移植。
-// effectiveDisabled：合并进程级 ONESSH_DISABLED_TOOLS 与当前 Bearer 令牌的 denylist。
+// effectiveDisabled：合并进程级 SUBSSH_DISABLED_TOOLS 与当前 Bearer 令牌的 denylist。
 // 令牌只能再收紧，不能重新打开实例已关闭的组。令牌 denylist 解析失败时 fail-closed：
 // 禁用全部 MCP 工具组，绝不静默放开。
 using SubSsh.Core.Abstractions;
@@ -12,7 +12,7 @@ public sealed class DenylistService : IDenylist
 {
     private readonly ISettings _settings;
     private readonly object _storeGate = new();
-    private IOneSshStoreFull? _store;
+    private ISubSshStoreFull? _store;
 
     /// <summary>denied 事件总线（tool_call denied；由 WebApi/McpCore 桥接到 SSE）。</summary>
     public EventBus Events { get; } = new();
@@ -22,7 +22,7 @@ public sealed class DenylistService : IDenylist
         _settings = settings;
     }
 
-    public void AttachStore(IOneSshStoreFull store)
+    public void AttachStore(ISubSshStoreFull store)
     {
         lock (_storeGate) _store = store;
     }
@@ -83,7 +83,7 @@ public sealed class DenylistService : IDenylist
         return Task.CompletedTask;
     }
 
-    private IOneSshStoreFull? Store
+    private ISubSshStoreFull? Store
     {
         get { lock (_storeGate) return _store; }
     }

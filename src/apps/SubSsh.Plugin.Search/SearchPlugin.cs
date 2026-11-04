@@ -1,5 +1,5 @@
 // SubSsh.Plugin.Search — 搜索引擎应用插件（只 Require 公共组件，不对外提供底层服务之外的接口）。
-// 对应 OneSSH internal/searchx：Grep（rg --json，exit 127 降级 helper→SFTP）、
+// 对应 SubSSH internal/searchx：Grep（rg --json，exit 127 降级 helper→SFTP）、
 // Find（fd/fdfind，--full-path 规则，降级同上）。helper 二进制路径经 ISettings.SearchHelper，
 // 为空则直接走 SFTP 降级（对应 Go HelperEnabled=false）。
 // 依赖：Require ISettings（SearchHelper）、IConnectionPool；Provide<ISearchEngine>。

@@ -6,7 +6,7 @@ using SubSsh.Core.ToolGroups;
 namespace SubSsh.Core.Abstractions;
 
 // ============================================================================
-// 公共组件抽象层：接口与 OneSSH 各 Go 模块的公开方法一一对应。
+// 公共组件抽象层：接口与 SubSSH 各 Go 模块的公开方法一一对应。
 // 每个接口都注明其 Go 源文件；由对应插件 Provide（见 CONVENTIONS.md「插件清单与服务依赖」表）。
 // ============================================================================
 
@@ -715,7 +715,7 @@ public interface IDenylist
 // ---------------------------------------------------------------------------
 public interface IMcpServer : IAsyncDisposable
 {
-    /// <summary>initialize 返回的 serverInfo.name（对应 Go serverInfo："OneSSH"）。</summary>
+    /// <summary>initialize 返回的 serverInfo.name（对应 Go serverInfo："SubSSH"）。</summary>
     string Name { get; }
 
     /// <summary>initialize 返回的 serverInfo.version。</summary>
