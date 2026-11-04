@@ -1,0 +1,21 @@
+﻿<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <!-- 插件依赖随包拷贝到 bin（插件 ALC 独立解析，需随插件一起部署） -->
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies Condition="'$(DeployToHostPlugins)' == 'true'">true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <!-- 插件自动部署：托管 dll → Host bin\plugins\；原生库按 RID 结构拷贝到 plugins\runtimes\ 并把当前 RID 的拷到根 -->
+  <Target Name="DeployPlugin" AfterTargets="Build" Condition="'$(DeployToHostPlugins)' == 'true'">
+    <ItemGroup>
+      <PluginManaged Include="$(TargetDir)*.dll;$(TargetDir)*.pdb" Exclude="$(TargetDir)e_sqlite3.dll" />
+      <PluginNative Include="$(TargetDir)runtimes\$(NETCoreSdkRuntimeIdentifier)\native\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginManaged)" DestinationFolder="$(MSBuildThisFileDirectory)src\core\SubSsh.Host\bin\$(Configuration)\net10.0\plugins\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PluginNative)" DestinationFolder="$(MSBuildThisFileDirectory)src\core\SubSsh.Host\bin\$(Configuration)\net10.0\plugins\" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

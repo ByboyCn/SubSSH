@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <DeployToHostPlugins>true</DeployToHostPlugins>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Builder" />
+    <Using Include="Microsoft.AspNetCore.Hosting" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.AspNetCore.Routing" />
+    <Using Include="Microsoft.AspNetCore.StaticFiles" />
+    <Using Include="System.Text.Json" />
+    <Using Include="System.Text.Json.Serialization" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\core\SubSsh.Core\SubSsh.Core.csproj" />
+  </ItemGroup>
+  <!-- vite 构建产物（web\ → 本项目 dist\）构建后随插件一起部署到 Host bin\plugins\dist\ -->
+  <Target Name="DeployPluginDist" AfterTargets="DeployPlugin">
+    <ItemGroup>
+      <PluginDistFiles Include="$(MSBuildProjectDirectory)\dist\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginDistFiles)"
+          DestinationFiles="@(PluginDistFiles->'$(MSBuildThisFileDirectory)..\..\core\SubSsh.Host\bin\$(Configuration)\net10.0\plugins\dist\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

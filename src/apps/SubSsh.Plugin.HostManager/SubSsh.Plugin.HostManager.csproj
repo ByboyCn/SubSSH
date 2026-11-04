@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <DeployToHostPlugins>true</DeployToHostPlugins>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 约束错误分类需要 SqliteException（对应 Go classifyStoreWrite 的 SQLITE_CONSTRAINT 判断）；
+         仅取类型不建库，版本与 Plugin.Db 一致 -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\core\SubSsh.Core\SubSsh.Core.csproj" />
+  </ItemGroup>
+</Project>

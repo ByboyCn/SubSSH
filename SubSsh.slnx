@@ -1,0 +1,31 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/components/">
+    <Project Path="src/components/SubSsh.Plugin.Db/SubSsh.Plugin.Db.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.ExecRunner/SubSsh.Plugin.ExecRunner.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.Files/SubSsh.Plugin.Files.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.McpCore/SubSsh.Plugin.McpCore.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.McpHttp/SubSsh.Plugin.McpHttp.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.McpStdio/SubSsh.Plugin.McpStdio.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.Memory/SubSsh.Plugin.Memory.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.Monitor/SubSsh.Plugin.Monitor.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.OAuth/SubSsh.Plugin.OAuth.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.SshPool/SubSsh.Plugin.SshPool.csproj" />
+    <Project Path="src/components/SubSsh.Plugin.WebApi/SubSsh.Plugin.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/src/apps/">
+    <Project Path="src/apps/SubSsh.Plugin.Crypto/SubSsh.Plugin.Crypto.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.HostManager/SubSsh.Plugin.HostManager.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.Search/SubSsh.Plugin.Search.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.ToolGroups/SubSsh.Plugin.ToolGroups.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.Tools.Exec/SubSsh.Plugin.Tools.Exec.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.Tools.Files/SubSsh.Plugin.Tools.Files.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.Tools.Hosts/SubSsh.Plugin.Tools.Hosts.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.Tools.Jobs/SubSsh.Plugin.Tools.Jobs.csproj" />
+    <Project Path="src/apps/SubSsh.Plugin.Tools.Memory/SubSsh.Plugin.Tools.Memory.csproj" />
+  </Folder>
+  <Folder Name="/src/core/">
+    <Project Path="src/core/SubSsh.Core/SubSsh.Core.csproj" />
+    <Project Path="src/core/SubSsh.Host/SubSsh.Host.csproj" />
+  </Folder>
+</Solution>

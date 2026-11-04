@@ -1,0 +1,11 @@
+bin/
+obj/
+release/
+*.user
+.vs/
+node_modules/
+web/dist/
+smoke-*.txt
+stdio-*.txt
+*.log
+data/
