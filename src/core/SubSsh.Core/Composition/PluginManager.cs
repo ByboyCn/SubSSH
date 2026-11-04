@@ -115,9 +115,12 @@ public sealed class PluginManager : IAdminApi
         var assembly = alc.LoadFromAssemblyPath(desc.FilePath);
         var type = assembly.GetType(desc.TypeName) ?? throw new InvalidOperationException($"类型丢失: {desc.TypeName}");
         var component = (IComponent)Activator.CreateInstance(type)!;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Console.Error.WriteLine($"[load] {desc.Id} 开始…");
         var ctx = new PluginContext(desc.Id, _composition, _bus);
         _loaded[desc.Id] = new LoadedPlugin(desc.Id, alc, component);
         await component.StartAsync(ctx, ct);
+        Console.Error.WriteLine($"[load] {desc.Id} 完成 {sw.ElapsedMilliseconds}ms");
     }
 
     public async Task<string> UnloadAsync(string id, CancellationToken ct = default)
