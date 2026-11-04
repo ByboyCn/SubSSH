@@ -3,11 +3,13 @@ import { reactive, ref } from 'vue'
 import { createKey, deleteKey, listKeys } from '@/api/client'
 import type { SshKey } from '@/types'
 import { useToastStore } from '@/stores/toast'
+import Modal from '@/components/ui/Modal.vue'
 
 const toast = useToastStore()
 const keys = ref<SshKey[]>([])
 const loading = ref(true)
 const submitting = ref(false)
+const showForm = ref(false)
 
 async function refresh() {
   loading.value = true
@@ -27,6 +29,14 @@ const form = reactive<{ name: string; mode: 'generate' | 'import'; privateKey: s
   passphrase: '',
 })
 
+function openCreate() {
+  form.name = ''
+  form.mode = 'generate'
+  form.privateKey = ''
+  form.passphrase = ''
+  showForm.value = true
+}
+
 async function submit() {
   submitting.value = true
   try {
@@ -37,6 +47,7 @@ async function submit() {
       passphrase: form.mode === 'import' && form.passphrase ? form.passphrase : undefined,
     })
     toast.success('密钥已创建')
+    showForm.value = false
     form.name = ''
     form.privateKey = ''
     form.passphrase = ''
@@ -63,7 +74,12 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString()
 </script>
 
 <template>
-  <div class="grid grid-cols-[1fr_360px] gap-4">
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted">密钥用于主机认证，私钥服务端加密存储</span>
+      <button class="btn btn-primary" @click="openCreate">＋ 新建密钥</button>
+    </div>
+
     <div class="card overflow-x-auto">
       <table class="table-base">
         <thead>
@@ -84,8 +100,7 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString()
       <div v-if="loading" class="py-4 text-center text-sm text-muted">加载中…</div>
     </div>
 
-    <div class="card">
-      <h2 class="mb-4 text-sm font-medium">新建密钥</h2>
+    <Modal v-if="showForm" title="新建密钥" @close="showForm = false">
       <form class="space-y-3" @submit.prevent="submit">
         <div>
           <label class="label">名称</label>
@@ -108,10 +123,13 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString()
             <input v-model="form.passphrase" type="password" class="input" autocomplete="off" />
           </div>
         </template>
-        <button type="submit" class="btn btn-primary w-full justify-center" :disabled="submitting">
-          {{ submitting ? '创建中…' : '创建' }}
-        </button>
+        <div class="flex justify-end gap-2">
+          <button type="button" class="btn" @click="showForm = false">取消</button>
+          <button type="submit" class="btn btn-primary" :disabled="submitting">
+            {{ submitting ? '创建中…' : '创建' }}
+          </button>
+        </div>
       </form>
-    </div>
+    </Modal>
   </div>
 </template>

@@ -10,6 +10,7 @@ import {
 } from '@/api/client'
 import type { Host, HostPayload } from '@/types'
 import { useToastStore } from '@/stores/toast'
+import Modal from '@/components/ui/Modal.vue'
 
 const toast = useToastStore()
 const hosts = ref<Host[]>([])
@@ -199,9 +200,8 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString()
     <pre v-if="testOutput" class="card font-mono text-xs text-muted">[{{ testOutput.host }}] 测试输出：
 {{ testOutput.output }}</pre>
 
-    <!-- 创建 / 编辑表单 -->
-    <div v-if="showForm" class="card max-w-2xl">
-      <h2 class="mb-4 text-sm font-medium">{{ editingId ? '编辑主机' : '新建主机' }}</h2>
+    <!-- 创建 / 编辑表单（弹窗） -->
+    <Modal v-if="showForm" :title="editingId ? '编辑主机' : '新建主机'" width="max-w-2xl" @close="showForm = false">
       <form class="grid grid-cols-2 gap-4" @submit.prevent="submit">
         <div>
           <label class="label">名称</label>
@@ -261,6 +261,6 @@ const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString()
           </button>
         </div>
       </form>
-    </div>
+    </Modal>
   </div>
 </template>

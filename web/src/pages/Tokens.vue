@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue'
 import { createToken, deleteToken, listTokens, listToolGroups, updateToken } from '@/api/client'
 import type { ApiToken, ToolGroup, TokenPayload } from '@/types'
 import { useToastStore } from '@/stores/toast'
+import Modal from '@/components/ui/Modal.vue'
 
 const toast = useToastStore()
 const tokens = ref<ApiToken[]>([])
@@ -11,6 +12,7 @@ const hosts = ref<{ id: number; name: string }[]>([])
 const loading = ref(true)
 const submitting = ref(false)
 const freshToken = ref<{ name: string; value: string } | null>(null)
+const showForm = ref(false)
 
 async function refresh() {
   loading.value = true
@@ -34,6 +36,7 @@ const editingId = ref<number | undefined>()
 function openCreate() {
   editingId.value = undefined
   Object.assign(form, emptyForm())
+  showForm.value = true
 }
 
 function openEdit(t: ApiToken) {
@@ -45,6 +48,7 @@ function openEdit(t: ApiToken) {
     hostIds: [...(t.hostIds ?? [])],
     disabledTools: [...t.disabledTools],
   })
+  showForm.value = true
 }
 
 async function submit() {
@@ -65,7 +69,7 @@ async function submit() {
       if (created.token) freshToken.value = { name: created.name, value: created.token }
       toast.success('令牌已创建')
     }
-    openCreate()
+    showForm.value = false
     await refresh()
   } catch (e) {
     toast.error(e)
@@ -101,52 +105,54 @@ async function copyToken(text: string) {
 </script>
 
 <template>
-  <div class="grid grid-cols-[1fr_380px] gap-4">
-    <div class="space-y-4">
-      <div v-if="freshToken" class="card border-ok/40">
-        <div class="mb-1 text-sm font-medium text-ok">令牌「{{ freshToken.name }}」已创建 — 明文仅显示这一次</div>
-        <div class="flex items-center gap-2">
-          <code class="flex-1 break-all rounded bg-bg px-2 py-1.5 font-mono text-xs">{{ freshToken.value }}</code>
-          <button class="btn" @click="copyToken(freshToken.value)">复制</button>
-        </div>
-      </div>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-muted">令牌供 MCP 客户端接入，创建后明文仅显示一次</span>
+      <button class="btn btn-primary" @click="openCreate">＋ 创建令牌</button>
+    </div>
 
-      <div class="card overflow-x-auto">
-        <table class="table-base">
-          <thead>
-            <tr><th>名称</th><th>范围</th><th>管理主机</th><th>主机限定</th><th>禁用工具</th><th>创建时间</th><th class="w-28">操作</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="t in tokens" :key="t.id">
-              <td class="font-medium">{{ t.name }}</td>
-              <td>
-                <span class="badge" :class="t.allHosts ? 'bg-accent/15 text-accent' : 'bg-raised text-muted'">
-                  {{ t.allHosts ? '全部主机' : `指定 ${t.hostIds?.length ?? 0} 台` }}
-                </span>
-              </td>
-              <td>{{ t.manageHosts ? '✓' : '—' }}</td>
-              <td class="text-muted text-xs">{{ t.allHosts ? '—' : (t.hostIds ?? []).map((id) => hosts.find((h) => h.id === id)?.name ?? `#${id}`).join(', ') }}</td>
-              <td class="text-muted text-xs">{{ t.disabledTools.length || '—' }}</td>
-              <td class="text-muted text-xs">{{ fmtTs(t.createdAt) }}</td>
-              <td>
-                <div class="flex gap-1.5">
-                  <button class="btn" @click="openEdit(t)">编辑</button>
-                  <button class="btn btn-danger" @click="remove(t)">删除</button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="!loading && tokens.length === 0">
-              <td colspan="7" class="text-center text-muted">暂无令牌</td>
-            </tr>
-          </tbody>
-        </table>
-        <div v-if="loading" class="py-4 text-center text-sm text-muted">加载中…</div>
+    <div v-if="freshToken" class="card border-ok/40">
+      <div class="mb-1 text-sm font-medium text-ok">令牌「{{ freshToken.name }}」已创建 — 明文仅显示这一次</div>
+      <div class="flex items-center gap-2">
+        <code class="flex-1 break-all rounded bg-bg px-2 py-1.5 font-mono text-xs">{{ freshToken.value }}</code>
+        <button class="btn" @click="copyToken(freshToken.value)">复制</button>
       </div>
     </div>
 
-    <!-- 创建 / 编辑令牌：名称、范围、管理权限、主机白名单、工具组勾选 -->
-    <div class="card">
-      <h2 class="mb-4 text-sm font-medium">{{ editingId ? '编辑令牌' : '创建令牌' }}</h2>
+    <div class="card overflow-x-auto">
+      <table class="table-base">
+        <thead>
+          <tr><th>名称</th><th>范围</th><th>管理主机</th><th>主机限定</th><th>禁用工具</th><th>创建时间</th><th class="w-28">操作</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="t in tokens" :key="t.id">
+            <td class="font-medium">{{ t.name }}</td>
+            <td>
+              <span class="badge" :class="t.allHosts ? 'bg-accent/15 text-accent' : 'bg-raised text-muted'">
+                {{ t.allHosts ? '全部主机' : `指定 ${t.hostIds?.length ?? 0} 台` }}
+              </span>
+            </td>
+            <td>{{ t.manageHosts ? '✓' : '—' }}</td>
+            <td class="text-muted text-xs">{{ t.allHosts ? '—' : (t.hostIds ?? []).map((id) => hosts.find((h) => h.id === id)?.name ?? `#${id}`).join(', ') }}</td>
+            <td class="text-muted text-xs">{{ t.disabledTools.length || '—' }}</td>
+            <td class="text-muted text-xs">{{ fmtTs(t.createdAt) }}</td>
+            <td>
+              <div class="flex gap-1.5">
+                <button class="btn" @click="openEdit(t)">编辑</button>
+                <button class="btn btn-danger" @click="remove(t)">删除</button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="!loading && tokens.length === 0">
+            <td colspan="7" class="text-center text-muted">暂无令牌</td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-if="loading" class="py-4 text-center text-sm text-muted">加载中…</div>
+    </div>
+
+    <!-- 创建 / 编辑令牌（弹窗） -->
+    <Modal v-if="showForm" :title="editingId ? '编辑令牌' : '创建令牌'" width="max-w-lg" @close="showForm = false">
       <form class="space-y-3" @submit.prevent="submit">
         <div>
           <label class="label">名称</label>
@@ -170,7 +176,7 @@ async function copyToken(text: string) {
         </label>
         <div>
           <label class="label">禁用的 MCP 工具组</label>
-          <div class="space-y-2">
+          <div class="max-h-56 space-y-2 overflow-y-auto">
             <div v-for="g in groups" :key="g.name" class="rounded-md border border-border p-2">
               <label class="flex items-center gap-2 text-sm font-medium">
                 <input
@@ -198,6 +204,6 @@ async function copyToken(text: string) {
           </button>
         </div>
       </form>
-    </div>
+    </Modal>
   </div>
 </template>
