@@ -140,12 +140,22 @@ public sealed class McpServerCore : IMcpServer
         return JsonRpcResponder.Result(msg, result);
     }
 
-    private static string ProtocolVersionOf(JsonElement @params) =>
-        @params.ValueKind == JsonValueKind.Object
-        && @params.TryGetProperty("protocolVersion", out var v)
-        && v.ValueKind == JsonValueKind.String
-            ? v.GetString() ?? "2025-06-18"
-            : "2025-06-18"; // TODO：与 Go SDK 的版本协商结果核对
+    // 服务端支持的协议版本（MCP 规范版本协商：请求版本不在集合内时返回最新支持版本，
+    // 客户端据此判断兼容性——无条件回显未知版本会导致客户端断开并无限重连）
+    private static readonly string[] SupportedProtocolVersions =
+        ["2025-06-18", "2025-03-26", "2024-11-05"];
+
+    private static string ProtocolVersionOf(JsonElement @params)
+    {
+        var requested = @params.ValueKind == JsonValueKind.Object
+            && @params.TryGetProperty("protocolVersion", out var v)
+            && v.ValueKind == JsonValueKind.String
+                ? v.GetString()
+                : null;
+        return requested != null && SupportedProtocolVersions.Contains(requested)
+            ? requested
+            : SupportedProtocolVersions[0]; // 最新支持版本
+    }
 
     private async Task<string> HandleToolsListAsync(JsonRpcMessage msg, McpCallContext? principal, CancellationToken ct)
     {
