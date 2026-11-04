@@ -1,4 +1,4 @@
-﻿// SubSsh.Plugin.WebApi — 公共 Web 组件插件（可插拔、可任意替换）。
+// SubSsh.Plugin.WebApi — 公共 Web 组件插件（可插拔、可任意替换）。
 // Requires：ISettings、ISubSshStoreFull（构造 WebApiStoreAdapter 适配为 IWebApiStore 并 Provide）、
 // IOAuthService（必需）+ IWebApiHostManager/IWebApiConnectionPool/IWebApiCommandRunner/
 // IWebApiJobManager/IWebApiFileManager（可选，上线自动绑入、下线自动解绑）。
@@ -30,6 +30,12 @@ public sealed class WebApiPlugin : IComponent
             server.DisposeAsync().AsTask().GetAwaiter().GetResult();
             server = null;
         }
+
+        // HostManager 插件 Provide 的是 IHostManager；这里适配为 WebApi 需要的窄接口并 Provide，
+        // 使 IWebApiHostManager 消费方无需感知核心接口。
+        ctx.Require<IHostManager>(
+            hm => ctx.Provide<IWebApiHostManager>(new HostManagerAdapter(hm)),
+            () => ctx.Unprovide<IWebApiHostManager>());
 
         void Bind(KestrelWebServer s)
         {
